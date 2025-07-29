@@ -153,6 +153,11 @@ body {
 /* Category Card Styling */
 .category-card {
     width: 150px; /* Narrower width for each item */
+    transition: transform 0.3s ease-in-out; /* Smooth transition for transform */
+}
+
+.category-card:hover {
+    transform: translateY(-5px); /* Lift effect on hover */
 }
 
 .category-image-container {
@@ -165,6 +170,11 @@ body {
     align-items: center;
     justify-content: center;
     margin-bottom: 10px; /* Space between image and title */
+    transition: background-color 0.3s ease-in-out; /* Smooth transition for background */
+}
+
+.category-card:hover .category-image-container {
+    background-color: var(--bs-primary); /* Change background on hover */
 }
 
 .category-image-container img {

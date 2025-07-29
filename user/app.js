@@ -196,7 +196,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Conditional loading based on page
     if (path.includes('products.html')) {
         loadCategories();
-        loadProducts('#product-listing-container');
+        const urlParams = new URLSearchParams(window.location.search);
+        const categoryId = urlParams.get('category_id');
+        loadProducts('#product-listing-container', null, '', categoryId);
     } else if (path.includes('product-detail.html')) {
         const urlParams = new URLSearchParams(window.location.search);
         const productId = urlParams.get('id');
