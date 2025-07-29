@@ -265,4 +265,84 @@ document.addEventListener('DOMContentLoaded', () => {
         customersData.data.forEach(order => uniqueCustomers.add(order.customer_phone));
         document.getElementById('total-customers').textContent = uniqueCustomers.size;
     }
+
+    async function loadBanners() {
+        console.log('Attempting to load banners...');
+        const response = await fetch('http://localhost:3000/api/banners');
+        const data = await response.json();
+        console.log('Banners API response data:', data);
+        const bannerList = document.getElementById('bannerList');
+        bannerList.innerHTML = '';
+        if (data.data.length === 0) {
+            document.getElementById('noBannersMessage').style.display = 'block';
+        } else {
+            document.getElementById('noBannersMessage').style.display = 'none';
+            data.data.forEach(banner => {
+                console.log('Rendering banner:', banner);
+                const bannerItem = document.createElement('div');
+                bannerItem.className = 'banner-item';
+                bannerItem.innerHTML = `
+                    <img src="http://localhost:3000/uploads/${banner.image}" alt="Banner Image">
+                    <button class="btn-delete" data-id="${banner.id}">Delete</button>
+                `;
+                bannerList.appendChild(bannerItem);
+                console.log('Banner item appended:', bannerItem);
+            });
+
+            bannerList.querySelectorAll('.btn-delete').forEach(button => {
+                button.addEventListener('click', async (event) => {
+                    const bannerId = event.target.dataset.id;
+                    if (confirm('Are you sure you want to delete this banner?')) {
+                        const response = await fetch(`http://localhost:3000/api/banners/${bannerId}`, {
+                            method: 'DELETE'
+                        });
+                        const result = await response.json();
+                        if (response.ok) {
+                            alert(result.message);
+                            loadBanners();
+                        } else {
+                            alert(`Error: ${result.error}`);
+                        }
+                    }
+                });
+            });
+        }
+    }
+
+    async function addBanner(event) {
+        event.preventDefault();
+        const formData = new FormData();
+        const imageInput = document.getElementById('bannerImage');
+        if (imageInput.files.length > 0) {
+            formData.append('image', imageInput.files[0]);
+        } else {
+            alert('Please select an image to upload.');
+            return;
+        }
+
+        const uploadMessage = document.getElementById('uploadMessage');
+        uploadMessage.textContent = 'Uploading...';
+        uploadMessage.style.color = 'blue';
+
+        const response = await fetch('http://localhost:3000/api/banners', {
+            method: 'POST',
+            body: formData
+        });
+        const result = await response.json();
+
+        if (response.ok) {
+            uploadMessage.textContent = 'Upload successful!';
+            uploadMessage.style.color = 'green';
+            event.target.reset();
+            loadBanners();
+        } else {
+            uploadMessage.textContent = `Upload failed: ${result.error}`;
+            uploadMessage.style.color = 'red';
+        }
+    }
+
+    if (path.includes('banners.html')) {
+        loadBanners();
+        document.getElementById('bannerUploadForm').addEventListener('submit', addBanner);
+    }
 });

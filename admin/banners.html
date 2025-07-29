@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Banners</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="sidebar">
+        <h2>Admin Panel</h2>
+        <ul>
+            <li><a href="index.html">Dashboard</a></li>
+            <li><a href="products.html">Products</a></li>
+            <li><a href="categories.html">Categories</a></li>
+            <li><a href="orders.html">Orders</a></li>
+            <li><a href="customers.html">Customers</a></li>
+            <li><a href="banners.html" class="active">Banners</a></li>
+        </ul>
+    </div>
+    <div class="main-content">
+        <header>
+            <h1>Banner Management</h1>
+        </header>
+        <section class="banner-upload-section">
+            <h2>Upload New Banner (Max 5)</h2>
+            <form id="bannerUploadForm" enctype="multipart/form-data">
+                <div class="form-group">
+                    <label for="bannerImage">Banner Image:</label>
+                    <input type="file" id="bannerImage" name="image" accept="image/*" required>
+                </div>
+                <button type="submit" class="btn-primary">Upload Banner</button>
+            </form>
+            <p id="uploadMessage" class="message"></p>
+        </section>
+
+        <section class="current-banners-section">
+            <h2>Current Banners</h2>
+            <div class="banner-list" id="bannerList">
+                <!-- Banners will be loaded here by JavaScript -->
+                <p id="noBannersMessage" style="display: none;">No banners uploaded yet.</p>
+            </div>
+        </section>
+    </div>
+    <script src="app.js"></script>
+</body>
+</html>

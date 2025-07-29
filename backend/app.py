@@ -72,6 +72,12 @@ def init_db():
                 FOREIGN KEY (product_id) REFERENCES products(id)
             )
         ''')
+        db.execute('''
+            CREATE TABLE IF NOT EXISTS banners (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                image TEXT NOT NULL
+            )
+        ''')
         db.commit()
         db.close()
 
@@ -301,6 +307,60 @@ def update_order_status(order_id):
     conn.commit()
     conn.close()
     return jsonify({"message": "success", "changes": 1})
+
+# Banners
+@app.route('/api/banners', methods=['GET'])
+def get_banners():
+    conn = get_db_connection()
+    banners = conn.execute('SELECT * FROM banners').fetchall()
+    conn.close()
+    return jsonify({"message": "success", "data": [dict(row) for row in banners]})
+
+@app.route('/api/banners', methods=['POST'])
+def add_banner():
+    if 'image' not in request.files:
+        return jsonify({"error": "No image file provided"}), 400
+
+    file = request.files['image']
+    if file.filename == '':
+        return jsonify({"error": "No selected image file"}), 400
+
+    conn = get_db_connection()
+    current_banner_count = conn.execute('SELECT COUNT(*) FROM banners').fetchone()[0]
+    if current_banner_count >= 5:
+        conn.close()
+        return jsonify({"error": "Maximum 5 banners allowed"}), 400
+
+    if file:
+        filename = str(uuid.uuid4()) + os.path.splitext(file.filename)[1]
+        filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+        file.save(filepath)
+
+        cursor = conn.execute('INSERT INTO banners (image) VALUES (?)', (filename,))
+        conn.commit()
+        banner_id = cursor.lastrowid
+        conn.close()
+        return jsonify({"message": "success", "data": {'id': banner_id, 'image': filename}}), 201
+    return jsonify({"error": "Failed to upload banner"}), 500
+
+@app.route('/api/banners/<int:banner_id>', methods=['DELETE'])
+def delete_banner(banner_id):
+    conn = get_db_connection()
+    banner = conn.execute('SELECT image FROM banners WHERE id = ?', (banner_id,)).fetchone()
+    if banner:
+        image_filename = banner['image']
+        conn.execute('DELETE FROM banners WHERE id = ?', (banner_id,))
+        conn.commit()
+        conn.close()
+        
+        # Delete image file from uploads folder
+        filepath = os.path.join(app.config['UPLOAD_FOLDER'], image_filename)
+        if os.path.exists(filepath):
+            os.remove(filepath)
+            return jsonify({"message": "deleted", "changes": 1})
+        return jsonify({"message": "deleted from db, file not found"}), 200
+    conn.close()
+    return jsonify({"error": "Banner not found"}), 404
 
 if __name__ == '__main__':
     app.run(debug=True, port=3000)

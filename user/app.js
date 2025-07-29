@@ -238,7 +238,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     async function loadProductDetail(productId) {
         console.log(`Loading product detail for ID: ${productId}`);
         const response = await fetch(`http://localhost:3000/api/products/${productId}`);
-        const data = await response.json();
+        const data = response.json();
         const product = data.data;
         console.log('Product detail data:', product);
         const productDetailContainer = document.querySelector('#product-detail-container');
@@ -289,6 +289,46 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
 
+    // Function to load and display banners
+    async function loadBanners() {
+        console.log('Loading banners...');
+        const response = await fetch('http://localhost:3000/api/banners');
+        const data = await response.json();
+        const banners = data.data;
+
+        const bannerCarouselInner = document.querySelector('#banner-carousel-inner');
+        if (!bannerCarouselInner) return;
+
+        bannerCarouselInner.innerHTML = ''; // Clear existing content
+
+        if (banners.length === 0) {
+            bannerCarouselInner.innerHTML = '<div class="carousel-item active"><p class="text-center">No promotional banners available.</p></div>';
+            return;
+        }
+
+        banners.forEach((banner, index) => {
+            const bannerItem = document.createElement('div');
+            bannerItem.className = `carousel-item ${index === 0 ? 'active' : ''}`;
+            bannerItem.innerHTML = `
+                <img src="http://localhost:3000/uploads/${banner.image}" class="d-block w-100 rounded shadow-sm" alt="Promotional Banner ${index + 1}">
+            `;
+            bannerCarouselInner.appendChild(bannerItem);
+            console.log(`Added banner ${index + 1}: ${banner.image}`);
+        });
+
+        console.log(`Total banners added to DOM: ${banners.length}`);
+
+        // Initialize Bootstrap Carousel AFTER all items are added
+        const myCarouselElement = document.querySelector('#promotionalBannerCarousel');
+        if (myCarouselElement) {
+            const carousel = new bootstrap.Carousel(myCarouselElement, {
+                interval: 3000, // Change image every 3 seconds
+                ride: 'carousel'
+            });
+            carousel.cycle(); // Explicitly start cycling
+        }
+    }
+
     // Conditional loading based on page
     if (path.includes('products.html')) {
         loadCategories();
@@ -307,6 +347,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     } else if (path.includes('index.html') || path === '/user/') {
         console.log('Loading index page content...');
         loadCategories(); // Load categories for the index page
+        loadBanners(); // Load banners for the index page
         await loadProducts('#new-arrivals-container', 10, '', null, 'newest', true, null, 1, false); // Do not show shimmer for new arrivals
         loadProducts('#featured-products-container', 8, 'featured-product-card', null, null, false, null, 1, false); // Do not show shimmer for featured products
     }

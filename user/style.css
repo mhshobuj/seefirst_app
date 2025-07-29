@@ -91,6 +91,25 @@ footer {
     background: linear-gradient(to right, #1a7a9a, #1a7a9a); /* Blue to blue */
 }
 
+/* Promotional Banner Styling */
+#promotionalBannerCarousel .carousel-item img {
+    height: 300px; /* Fixed height for banners */
+    object-fit: cover; /* Cover the area, cropping if necessary */
+    width: 100%;
+}
+
+#promotionalBannerCarousel .carousel-control-prev,
+#promotionalBannerCarousel .carousel-control-next {
+    width: 5%; /* Make controls narrower */
+}
+
+#promotionalBannerCarousel .carousel-control-prev-icon,
+#promotionalBannerCarousel .carousel-control-next-icon {
+    background-color: rgba(0, 0, 0, 0.5); /* Darker background for icons */
+    border-radius: 50%; /* Make icons round */
+    padding: 15px; /* Add padding to make them larger */
+}
+
 /* New Arrivals Product Card Styling */
 .product-card-small {
     width: 12rem; /* Decreased width for product cards */
@@ -199,6 +218,8 @@ footer {
     justify-content: space-between;
     padding: 10px; /* Add padding to the wrapper to match card padding */
     box-sizing: border-box; /* Include padding in the width/height */
+    position: relative; /* Ensure shimmer animation is contained */
+    overflow: hidden; /* Hide overflowing shimmer */
 }
 
 .shimmer-image,
@@ -228,12 +249,12 @@ footer {
     border-radius: 4px;
 }
 
-.shimmer-title-line {
-    width: 80%; /* Width for title line */
+.shimmer-title-line { /* Specific class for title line */
+    width: 80%;
 }
 
-.shimmer-price-line {
-    width: 60%; /* Width for price line */
+.shimmer-price-line { /* Specific class for price line */
+    width: 60%;
 }
 
 .shimmer-button {
