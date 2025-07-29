@@ -190,6 +190,68 @@ footer {
     object-fit: contain;
 }
 
+/* Shimmer Effect */
+.shimmer-wrapper {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 10px; /* Add padding to the wrapper to match card padding */
+    box-sizing: border-box; /* Include padding in the width/height */
+}
+
+.shimmer-image,
+.shimmer-line,
+.shimmer-button {
+    background: linear-gradient(to right, #f6f7f8 0%, #edeef1 20%, #f6f7f8 40%, #f6f7f8 100%);
+    background-repeat: no-repeat;
+    background-size: 800px 104px; /* Adjust as needed for the animation sweep */
+    animation-duration: 1.2s;
+    animation-fill-mode: forwards;
+    animation-iteration-count: infinite;
+    animation-name: shimmer;
+    animation-timing-function: linear;
+    border-radius: 4px; /* Consistent with product card elements */
+}
+
+.shimmer-image {
+    height: 120px; /* Matches product image height */
+    width: 80%; /* Matches product image width */
+    margin: 0 auto 10px auto; /* Matches product image margin */
+    border-radius: 4px;
+}
+
+.shimmer-line {
+    height: 16px; /* Height for title/price lines */
+    margin-bottom: 8px; /* Adjusted margin for lines */
+    border-radius: 4px;
+}
+
+.shimmer-title-line {
+    width: 80%; /* Width for title line */
+}
+
+.shimmer-price-line {
+    width: 60%; /* Width for price line */
+}
+
+.shimmer-button {
+    height: 38px; /* Matches button height */
+    width: 100%; /* Matches button width */
+    margin-top: 16px; /* Adjusted margin for button */
+    border-radius: 20px; /* Matches button border-radius */
+}
+
+@keyframes shimmer {
+    0% {
+        background-position: -468px 0;
+    }
+    100% {
+        background-position: 468px 0;
+    }
+}
+
 /* New Arrival Card Styling */
 .new-arrival-card {
     width: 200px; /* Set a fixed width */

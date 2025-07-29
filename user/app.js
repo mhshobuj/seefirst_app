@@ -2,7 +2,34 @@ document.addEventListener('DOMContentLoaded', async () => {
     const path = window.location.pathname;
 
     // Function to fetch and display products
-    async function loadProducts(containerSelector, limit = null, cardClass = '', categoryId = null, sort = null, isCarousel = false, searchQuery = null, page = 1) {
+    async function loadProducts(containerSelector, limit = null, cardClass = '', categoryId = null, sort = null, isCarousel = false, searchQuery = null, page = 1, showShimmer = false) {
+        const productContainer = document.querySelector(containerSelector);
+        if (!productContainer) return;
+
+        if (showShimmer) {
+            productContainer.innerHTML = ''; // Clear existing content before showing shimmer
+            const shimmerCount = limit || 8; // Show 8 shimmer cards by default or based on limit
+            for (let i = 0; i < shimmerCount; i++) {
+                const shimmerCard = `
+                    <div class="col-6 col-md-3">
+                        <div class="card shadow-sm h-100 ${cardClass}">
+                            <div class="shimmer-wrapper">
+                                <div class="shimmer-image card-img-top"></div>
+                                <div class="card-body p-2">
+                                    <div class="shimmer-line shimmer-title-line"></div>
+                                    <div class="shimmer-line shimmer-price-line"></div>
+                                    <div class="shimmer-button"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                productContainer.innerHTML += shimmerCard;
+            }
+        } else {
+            productContainer.innerHTML = ''; // Clear existing content if not showing shimmer
+        }
+
         let apiUrl = 'http://localhost:3000/api/products';
         const params = new URLSearchParams();
         if (categoryId && categoryId !== 'all') {
@@ -19,15 +46,17 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (params.toString()) {
             apiUrl += `?${params.toString()}`;
         }
+
+        // Add a small delay to make shimmer visible for testing
+        await new Promise(resolve => setTimeout(resolve, 500)); // 500ms delay
+
         const response = await fetch(apiUrl);
         const data = await response.json();
         const products = limit ? data.data.slice(0, limit) : data.data;
         const totalPages = data.total_pages;
         const currentPage = data.current_page;
 
-        const productContainer = document.querySelector(containerSelector);
-        if (!productContainer) return;
-        productContainer.innerHTML = ''; // Clear existing content
+        productContainer.innerHTML = ''; // Clear shimmer or previous content
 
         if (products.length === 0) {
             productContainer.innerHTML = '<div class="col-12 text-center py-5"><p class="lead">No products found matching your criteria.</p></div>';
@@ -265,8 +294,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         loadCategories();
         const urlParams = new URLSearchParams(window.location.search);
         const categoryId = urlParams.get('category_id');
+        const sortOption = urlParams.get('sort');
         const searchQuery = urlParams.get('search');
-        loadProducts('#product-listing-container', null, '', categoryId, null, false, searchQuery);
+        const page = parseInt(urlParams.get('page')) || 1;
+        loadProducts('#product-listing-container', null, '', categoryId, sortOption, false, searchQuery, page, true); // Show shimmer on products page
     } else if (path.includes('product-detail.html')) {
         const urlParams = new URLSearchParams(window.location.search);
         const productId = urlParams.get('id');
@@ -276,18 +307,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     } else if (path.includes('index.html') || path === '/user/') {
         console.log('Loading index page content...');
         loadCategories(); // Load categories for the index page
-        await loadProducts('#new-arrivals-container', 10, '', null, 'newest', true); // Load 10 new arrivals for the carousel
-        loadProducts('#featured-products-container', 8, 'featured-product-card'); // Load 8 featured products with specific card styling
-    }
-
-    // Call renderPagination after products are loaded on products.html
-    if (path.includes('products.html')) {
-        const urlParams = new URLSearchParams(window.location.search);
-        const categoryId = urlParams.get('category_id');
-        const sortOption = urlParams.get('sort');
-        const searchQuery = urlParams.get('search');
-        const page = parseInt(urlParams.get('page')) || 1;
-        loadProducts('#product-listing-container', null, '', categoryId, sortOption, false, searchQuery, page);
+        await loadProducts('#new-arrivals-container', 10, '', null, 'newest', true, null, 1, false); // Do not show shimmer for new arrivals
+        loadProducts('#featured-products-container', 8, 'featured-product-card', null, null, false, null, 1, false); // Do not show shimmer for featured products
     }
 
     // Handle search form submission
