@@ -2,7 +2,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const path = window.location.pathname;
 
     // Function to fetch and display products
-    async function loadProducts(containerSelector, limit = null, cardClass = '', categoryId = null, sort = null, isCarousel = false) {
+    async function loadProducts(containerSelector, limit = null, cardClass = '', categoryId = null, sort = null, isCarousel = false, searchQuery = null, page = 1) {
         let apiUrl = 'http://localhost:3000/api/products';
         const params = new URLSearchParams();
         if (categoryId && categoryId !== 'all') {
@@ -11,16 +11,29 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (sort) {
             params.append('sort', sort);
         }
+        if (searchQuery) {
+            params.append('search', searchQuery);
+        }
+        params.append('page', page);
+
         if (params.toString()) {
             apiUrl += `?${params.toString()}`;
         }
         const response = await fetch(apiUrl);
         const data = await response.json();
         const products = limit ? data.data.slice(0, limit) : data.data;
+        const totalPages = data.total_pages;
+        const currentPage = data.current_page;
 
         const productContainer = document.querySelector(containerSelector);
         if (!productContainer) return;
         productContainer.innerHTML = ''; // Clear existing content
+
+        if (products.length === 0) {
+            productContainer.innerHTML = '<div class="col-12 text-center py-5"><p class="lead">No products found matching your criteria.</p></div>';
+            renderPagination(0, 0, categoryId, sort, searchQuery); // Hide pagination if no products
+            return;
+        }
 
         if (isCarousel) {
             for (let i = 0; i < products.length; i += 5) {
@@ -138,6 +151,60 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
 
+    // Function to render pagination
+    function renderPagination(totalPages, currentPage, categoryId, sort, searchQuery) {
+        const paginationContainer = document.querySelector('#pagination-container');
+        if (!paginationContainer) return;
+
+        paginationContainer.innerHTML = ''; // Clear existing pagination
+
+        if (totalPages <= 1) {
+            paginationContainer.style.display = 'none'; // Hide pagination if only one page or less
+            return;
+        }
+
+        paginationContainer.style.display = 'flex'; // Show pagination
+
+        let paginationHtml = `
+            <ul class="pagination justify-content-center">
+                <li class="page-item ${currentPage === 1 ? 'disabled' : ''}">
+                    <a class="page-link" href="#" data-page="${currentPage - 1}" aria-label="Previous">
+                        <i class="bi bi-chevron-left"></i>
+                    </a>
+                </li>
+        `;
+
+        for (let i = 1; i <= totalPages; i++) {
+            paginationHtml += `
+                <li class="page-item ${currentPage === i ? 'active' : ''}">
+                    <a class="page-link" href="#" data-page="${i}">${i}</a>
+                </li>
+            `;
+        }
+
+        paginationHtml += `
+                <li class="page-item ${currentPage === totalPages ? 'disabled' : ''}">
+                    <a class="page-link" href="#" data-page="${currentPage + 1}" aria-label="Next">
+                        <i class="bi bi-chevron-right"></i>
+                    </a>
+                </li>
+            </ul>
+        `;
+
+        paginationContainer.innerHTML = paginationHtml;
+
+        // Add event listeners to pagination links
+        paginationContainer.querySelectorAll('.page-link').forEach(link => {
+            link.addEventListener('click', function(event) {
+                event.preventDefault();
+                const newPage = parseInt(this.dataset.page);
+                if (newPage >= 1 && newPage <= totalPages) {
+                    loadProducts('#product-listing-container', null, '', categoryId, sort, false, searchQuery, newPage);
+                }
+            });
+        });
+    }
+
     // Function to load product detail
     async function loadProductDetail(productId) {
         console.log(`Loading product detail for ID: ${productId}`);
@@ -198,7 +265,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         loadCategories();
         const urlParams = new URLSearchParams(window.location.search);
         const categoryId = urlParams.get('category_id');
-        loadProducts('#product-listing-container', null, '', categoryId);
+        const searchQuery = urlParams.get('search');
+        loadProducts('#product-listing-container', null, '', categoryId, null, false, searchQuery);
     } else if (path.includes('product-detail.html')) {
         const urlParams = new URLSearchParams(window.location.search);
         const productId = urlParams.get('id');
@@ -210,5 +278,29 @@ document.addEventListener('DOMContentLoaded', async () => {
         loadCategories(); // Load categories for the index page
         await loadProducts('#new-arrivals-container', 10, '', null, 'newest', true); // Load 10 new arrivals for the carousel
         loadProducts('#featured-products-container', 8, 'featured-product-card'); // Load 8 featured products with specific card styling
+    }
+
+    // Call renderPagination after products are loaded on products.html
+    if (path.includes('products.html')) {
+        const urlParams = new URLSearchParams(window.location.search);
+        const categoryId = urlParams.get('category_id');
+        const sortOption = urlParams.get('sort');
+        const searchQuery = urlParams.get('search');
+        const page = parseInt(urlParams.get('page')) || 1;
+        loadProducts('#product-listing-container', null, '', categoryId, sortOption, false, searchQuery, page);
+    }
+
+    // Handle search form submission
+    const searchForm = document.getElementById('searchForm');
+    const searchInput = document.getElementById('searchInput');
+
+    if (searchForm && searchInput) {
+        searchForm.addEventListener('submit', function(event) {
+            event.preventDefault();
+            const query = searchInput.value.trim();
+            if (query) {
+                window.location.href = `products.html?search=${encodeURIComponent(query)}`;
+            }
+        });
     }
 });

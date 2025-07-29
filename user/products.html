@@ -20,8 +20,8 @@
                 <ul class="navbar-nav mb-2 mb-lg-0">
                 </ul>
                 <div class="w-50 mx-auto">
-                    <form class="d-flex">
-                        <input class="form-control me-2 w-100" type="search" placeholder="Search products..." aria-label="Search">
+                    <form class="d-flex" id="searchForm">
+                        <input class="form-control me-2 w-100" type="search" placeholder="Search products..." aria-label="Search" id="searchInput">
                     </form>
                 </div>
                 <div class="d-flex align-items-center ms-auto">
@@ -66,24 +66,8 @@
             <div class="row row-cols-2 row-cols-md-4 row-cols-lg-5 g-3" id="product-listing-container">
                 <!-- Products will be loaded here by JavaScript -->
             </div>
-            <!-- Pagination -->
-            <nav aria-label="Product page navigation" class="mt-4">
-                <ul class="pagination justify-content-center">
-                    <li class="page-item disabled">
-                        <a class="page-link" href="#" tabindex="-1" aria-disabled="true">
-                            <i class="bi bi-chevron-left"></i>
-                        </a>
-                    </li>
-                    <li class="page-item active" aria-current="page"><a class="page-link" href="#">1</a></li>
-                    <li class="page-item"><a class="page-link" href="#">2</a></li>
-                    <li class="page-item"><a class="page-link" href="#">3</a></li>
-                    <li class="page-item">
-                        <a class="page-link" href="#">
-                            <i class="bi bi-chevron-right"></i>
-                        </a>
-                    </li>
-                </ul>
-            </nav>
+            <!-- Pagination will be loaded here by JavaScript -->
+            <div id="pagination-container" class="mt-4"></div>
         </div>
     </section>
 

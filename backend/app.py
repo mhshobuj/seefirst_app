@@ -86,23 +86,34 @@ def get_products():
     conn = get_db_connection()
     category_id = request.args.get('category_id')
     sort_option = request.args.get('sort')
+    search_query = request.args.get('search')
     page = request.args.get('page', 1, type=int)
     per_page = request.args.get('per_page', 10, type=int)
 
     query = 'SELECT * FROM products'
     count_query = 'SELECT COUNT(*) FROM products'
     params = []
+    where_clauses = []
 
     if category_id and category_id != 'all':
         category_row = conn.execute('SELECT name FROM categories WHERE id = ?', (category_id,)).fetchone()
         if category_row:
             category_name = category_row['name']
-            query += ' WHERE category = ?'
-            count_query += ' WHERE category = ?'
+            where_clauses.append('category = ?')
             params.append(category_name)
         else:
             conn.close()
             return jsonify({"message": "success", "data": [], "total_pages": 0, "current_page": page})
+
+    if search_query:
+        search_pattern = '%' + search_query + '%'
+        where_clauses.append('(name LIKE ? OR description LIKE ?)')
+        params.append(search_pattern)
+        params.append(search_pattern)
+
+    if where_clauses:
+        query += ' WHERE ' + ' AND '.join(where_clauses)
+        count_query += ' WHERE ' + ' AND '.join(where_clauses)
 
     if sort_option == 'price_asc':
         query += ' ORDER BY price ASC'
