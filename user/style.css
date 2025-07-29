@@ -1,0 +1,195 @@
+/* Material Design Inspired Theme */
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap');
+
+:root {
+    --bs-primary: #2596be; /* Blue */
+    --bs-primary-rgb: 37, 150, 190;
+    --bs-orange: #FF5722; /* Vibrant Orange */
+}
+
+body {
+    font-family: 'Roboto', sans-serif;
+    background-color: #f5f5f5;
+    color: #212121;
+}
+
+/* Navbar */
+.navbar {
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.navbar-brand {
+    font-weight: 500;
+    font-size: 1.5rem;
+    color: var(--bs-primary) !important;
+}
+
+.nav-link {
+    font-weight: 500;
+    color: #000000 !important; /* Changed to black for better visibility */
+}
+
+.nav-link.active {
+    color: var(--bs-primary) !important; /* Bootstrap primary blue for active link */
+}
+
+.pagination .page-item .page-link .bi {
+    color: inherit; /* Inherit color from parent page-link */
+}
+
+.dropdown-toggle {
+    color: #000000 !important; /* Dropdown toggle to black */
+}
+
+/* Cards */
+.card {
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    transition: box-shadow .3s ease;
+    border-bottom: none; /* Remove bottom border stroke */
+}
+
+.card:hover {
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+}
+
+.card-title {
+    font-weight: 500;
+    color: var(--bs-primary);
+}
+
+/* Buttons */
+.btn-primary {
+    background-color: var(--bs-primary) !important;
+    border-color: var(--bs-primary) !important;
+    color: white !important;
+}
+
+.btn-outline-primary {
+    color: var(--bs-primary) !important;
+    border-color: var(--bs-primary) !important;
+}
+
+.btn-outline-primary:hover,
+.btn-outline-primary.active,
+.btn-outline-primary:hover.active {
+    background-color: var(--bs-primary) !important;
+    border-color: var(--bs-primary) !important;
+    color: white !important;
+}
+
+
+/* Hero Section Gradients */
+.hero-gradient-1 {
+    background: linear-gradient(to right, #1a7a9a, #1a7a9a); /* Blue to blue */
+}
+
+/* New Arrivals Product Card Styling */
+.product-card-small {
+    width: 12rem; /* Decreased width for product cards */
+    margin: 0.5rem auto; /* Adjusted margin */
+    padding: 0.5rem; /* Adjusted inner padding */
+    text-align: center; /* Center content within the card */
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1); /* Refined shadow */
+    border-radius: 8px;
+    background-color: #fff;
+    transition: transform 0.2s ease-in-out;
+}
+
+.product-card-small:hover {
+    transform: translateY(-3px); /* Subtle lift on hover */
+}
+
+.product-card-small img {
+    max-width: 100%;
+    height: 120px; /* Decreased height for images */
+    object-fit: contain; /* Ensure image fits without cropping */
+    display: block;
+    margin: 0 auto 0.5rem auto;
+    border-radius: 4px;
+}
+
+/* Pagination Styling */
+.pagination .page-item .page-link {
+    border-radius: 50% !important; /* Make them round */
+    margin: 0 5px; /* Space between circles */
+    width: 40px; /* Fixed width for circles */
+    height: 40px; /* Fixed height for circles */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--bs-primary); /* Primary color for text/icons */
+    border: 1px solid var(--bs-primary); /* Primary color border */
+    background-color: white; /* White fill for unselected */
+    transition: all 0.3s ease;
+}
+
+.pagination .page-item.active .page-link {
+    background-color: var(--bs-primary); /* Primary color fill for selected */
+    border-color: var(--bs-primary); /* Primary color border for selected */
+    color: white; /* White text for selected */
+}
+
+.pagination .page-item .page-link:hover:not(.active) {
+    background-color: rgba(var(--bs-primary-rgb), 0.1); /* Light primary background on hover */
+}
+
+.pagination .page-item.disabled .page-link {
+    color: #6c757d; /* Grey out disabled links */
+    border-color: #dee2e6;
+    background-color: #e9ecef;
+}
+
+/* Hide scrollbar for category section */
+#category-section-container::-webkit-scrollbar {
+    display: none; /* For Chrome, Safari, and Opera */
+}
+
+#category-section-container {
+    -ms-overflow-style: none;  /* For Internet Explorer and Edge */
+    scrollbar-width: none;  /* For Firefox */
+}
+
+/* Category Card Styling */
+.category-card {
+    width: 150px; /* Narrower width for each item */
+}
+
+.category-image-container {
+    background-color: #f0f0f0; /* Gray background */
+    border-radius: 50%; /* Make it a circle */
+    padding: 20px; /* Padding around the image */
+    width: 120px; /* Container width */
+    height: 120px; /* Container height */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 10px; /* Space between image and title */
+}
+
+.category-image-container img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+}
+
+/* New Arrival Card Styling */
+.new-arrival-card {
+    width: 200px; /* Set a fixed width */
+    height: 300px; /* Set a fixed height */
+    margin: 0 auto; /* Center the cards */
+}
+
+.new-arrival-card .card-img-top {
+    height: 120px; /* Fixed height for the image */
+    width: 80%; /* Reduced width for the image */
+    object-fit: contain; /* Ensure the image covers the area */
+    margin: 0 auto; /* Center the image */
+}
+
+.new-arrival-item {
+    flex: 0 0 20%; /* Each item takes 20% of the width to show 5 items per row */
+    max-width: 20%;
+    padding: 0 5px; /* Add some padding between items */
+    box-sizing: border-box; /* Include padding in the width calculation */
+}
