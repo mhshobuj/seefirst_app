@@ -1,9 +1,58 @@
 document.addEventListener('DOMContentLoaded', () => {
     const path = window.location.pathname;
 
+    // --- Authentication Logic ---
+    function checkAuth() {
+        const isLoggedIn = localStorage.getItem('isLoggedIn');
+        if (!isLoggedIn && !path.includes('login.html')) {
+            window.location.href = 'login.html';
+        } else if (isLoggedIn && path.includes('login.html')) {
+            window.location.href = 'index.html';
+        }
+    }
+
+    async function login(event) {
+        event.preventDefault();
+        const email = document.getElementById('email').value;
+        const password = document.getElementById('password').value;
+        const loginMessage = document.getElementById('loginMessage');
+
+        try {
+            const response = await fetch('http://localhost:3000/api/admin/login', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ email, password })
+            });
+            const data = await response.json();
+
+            if (response.ok) {
+                localStorage.setItem('isLoggedIn', 'true');
+                window.location.href = 'index.html';
+            } else {
+                loginMessage.textContent = data.error || 'Login failed';
+                loginMessage.style.color = 'red';
+            }
+        } catch (error) {
+            console.error('Error during login:', error);
+            loginMessage.textContent = 'An error occurred during login.';
+            loginMessage.style.color = 'red';
+        }
+    }
+
+    function logout() {
+        localStorage.removeItem('isLoggedIn');
+        window.location.href = 'login.html';
+    }
+
+    // Run authentication check on every page load
+    checkAuth();
+
+    // --- Page Specific Logic ---
     if (path.includes('products.html')) {
         loadProducts();
-        loadCategoriesForProducts(); // New function to load categories for product form
+        loadCategoriesForProducts();
         document.getElementById('addProductForm').addEventListener('submit', addProduct);
     } else if (path.includes('categories.html')) {
         loadCategories();
@@ -12,10 +61,16 @@ document.addEventListener('DOMContentLoaded', () => {
         loadOrders();
     } else if (path.includes('customers.html')) {
         loadCustomers();
+    } else if (path.includes('banners.html')) {
+        loadBanners();
+        document.getElementById('bannerUploadForm').addEventListener('submit', addBanner);
     } else if (path.includes('index.html') || path === '/admin/') {
         loadDashboardSummary();
+    } else if (path.includes('login.html')) {
+        document.getElementById('loginForm').addEventListener('submit', login);
     }
 
+    // --- Existing Functions (moved below for clarity) ---
     async function loadProducts() {
         const response = await fetch('http://localhost:3000/api/products');
         const data = await response.json();
@@ -344,5 +399,20 @@ document.addEventListener('DOMContentLoaded', () => {
     if (path.includes('banners.html')) {
         loadBanners();
         document.getElementById('bannerUploadForm').addEventListener('submit', addBanner);
+    } else if (path.includes('login.html')) {
+        console.log('Login page detected. Attaching login form listener.');
+        const loginForm = document.getElementById('loginForm');
+        if (loginForm) {
+            loginForm.addEventListener('submit', login);
+            console.log('Login form listener attached.');
+        } else {
+            console.error('Login form not found!');
+        }
+    }
+
+    // Attach logout event listener to the logout button on all admin pages
+    const logoutButton = document.getElementById('logoutButton');
+    if (logoutButton) {
+        logoutButton.addEventListener('click', logout);
     }
 });

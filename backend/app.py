@@ -308,6 +308,18 @@ def update_order_status(order_id):
     conn.close()
     return jsonify({"message": "success", "changes": 1})
 
+@app.route('/api/admin/login', methods=['POST'])
+def admin_login():
+    data = request.json
+    email = data.get('email')
+    password = data.get('password')
+
+    # Static credentials for demonstration purposes
+    if email == 'admin@gmail.com' and password == '12345678':
+        return jsonify({"message": "Login successful"}), 200
+    else:
+        return jsonify({"error": "Invalid credentials"}), 401
+
 # Banners
 @app.route('/api/banners', methods=['GET'])
 def get_banners():

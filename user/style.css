@@ -120,6 +120,7 @@ footer {
         overflow: hidden;
         text-overflow: ellipsis;
         max-width: 100%; /* Allow it to take full width */
+        display: inline-block; /* Ensure white-space nowrap works */
     }
 }
 
