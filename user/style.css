@@ -91,6 +91,38 @@ footer {
     background: linear-gradient(to right, #1a7a9a, #1a7a9a); /* Blue to blue */
 }
 
+#hero-section {
+    padding: 3rem 0; /* Adjust padding for the hero section */
+}
+
+#hero-section h1 {
+    font-size: 2.8rem; /* Adjust font size for heading */
+    margin-bottom: 1rem;
+}
+
+#hero-section p {
+    font-size: 1.1rem;
+    margin-top: 0.5rem;
+}
+
+#hero-section .hero-description {
+    max-width: 48rem; /* Original max-width for smaller screens */
+    margin: 0.5rem auto 1.5rem auto;
+}
+
+#hero-section .hero-buttons {
+    margin-top: 1.5rem;
+}
+
+@media (min-width: 992px) { /* For large screens and up (lg breakpoint in Bootstrap) */
+    #hero-section .hero-description {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 100%; /* Allow it to take full width */
+    }
+}
+
 /* Promotional Banner Styling */
 #promotionalBannerCarousel .carousel-item img {
     height: 300px; /* Fixed height for banners */
