@@ -44,10 +44,30 @@ def init_db():
                 name TEXT NOT NULL,
                 description TEXT,
                 price REAL NOT NULL,
+                offer_price REAL,
                 image TEXT,
-                category TEXT
+                category TEXT,
+                colors TEXT,
+                condition TEXT
             )
         ''')
+        # Add new columns if they don't exist
+        try:
+            db.execute("ALTER TABLE products ADD COLUMN offer_price REAL");
+        except sqlite3.OperationalError as e:
+            if "duplicate column name" not in str(e):
+                raise
+        try:
+            db.execute("ALTER TABLE products ADD COLUMN colors TEXT");
+        except sqlite3.OperationalError as e:
+            if "duplicate column name" not in str(e):
+                raise
+        try:
+            db.execute("ALTER TABLE products ADD COLUMN condition TEXT");
+        except sqlite3.OperationalError as e:
+            if "duplicate column name" not in str(e):
+                raise
+
         db.execute("""
             CREATE TABLE IF NOT EXISTS categories (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -121,12 +141,15 @@ def get_products():
         query += ' WHERE ' + ' AND '.join(where_clauses)
         count_query += ' WHERE ' + ' AND '.join(where_clauses)
 
+    # Default sort order
+    order_by_clause = ' ORDER BY id DESC'
+
     if sort_option == 'price_asc':
-        query += ' ORDER BY price ASC'
+        order_by_clause = ' ORDER BY price ASC'
     elif sort_option == 'price_desc':
-        query += ' ORDER BY price DESC'
-    elif sort_option == 'newest':
-        query += ' ORDER BY id DESC'
+        order_by_clause = ' ORDER BY price DESC'
+    
+    query += order_by_clause
 
     # Get total count for pagination
     total_products = conn.execute(count_query, params).fetchone()[0]
@@ -146,11 +169,17 @@ def add_product():
     name = request.form['name']
     description = request.form.get('description')
     price = float(request.form['price'])
+    offer_price = float(request.form.get('offer_price', 0.0))
     category = request.form.get('category')
+    colors = request.form.get('colors')
+    condition = request.form.get('condition')
 
     image_filenames = []
     if 'images' in request.files:
-        for file in request.files.getlist('images'):
+        files = request.files.getlist('images')
+        if len(files) > 5:
+            return jsonify({"error": "Maximum 5 images allowed"}), 400
+        for file in files:
             if file.filename != '':
                 filename = str(uuid.uuid4()) + os.path.splitext(file.filename)[1] # Generate unique filename
                 temp_path = os.path.join(app.config['UPLOAD_FOLDER'], "temp_" + filename)
@@ -161,11 +190,11 @@ def add_product():
     image_paths = ', '.join(image_filenames) # Store as comma-separated string
 
     conn = get_db_connection()
-    cursor = conn.execute('INSERT INTO products (name, description, price, image, category) VALUES (?, ?, ?, ?, ?)', (name, description, price, image_paths, category))
+    cursor = conn.execute('INSERT INTO products (name, description, price, offer_price, image, category, colors, condition) VALUES (?, ?, ?, ?, ?, ?, ?, ?)', (name, description, price, offer_price, image_paths, category, colors, condition))
     conn.commit()
     product_id = cursor.lastrowid
     conn.close()
-    return jsonify({"message": "success", "data": {'id': product_id, 'name': name, 'description': description, 'price': price, 'image': image_paths, 'category': category}}), 201
+    return jsonify({"message": "success", "data": {'id': product_id, 'name': name, 'description': description, 'price': price, 'offer_price': offer_price, 'image': image_paths, 'category': category, 'colors': colors, 'condition': condition}}), 201
 
 @app.route('/api/products/<int:product_id>', methods=['GET'])
 def get_product(product_id):
@@ -181,11 +210,17 @@ def update_product(product_id):
     name = request.form['name']
     description = request.form.get('description')
     price = float(request.form['price'])
+    offer_price = float(request.form.get('offer_price', 0.0))
     category = request.form.get('category')
+    colors = request.form.get('colors')
+    condition = request.form.get('condition')
 
     image_filenames = []
     if 'images' in request.files:
-        for file in request.files.getlist('images'):
+        files = request.files.getlist('images')
+        if len(files) > 5:
+            return jsonify({"error": "Maximum 5 images allowed"}), 400
+        for file in files:
             if file.filename != '':
                 filename = str(uuid.uuid4()) + os.path.splitext(file.filename)[1]
                 temp_path = os.path.join(app.config['UPLOAD_FOLDER'], "temp_" + filename)
@@ -198,13 +233,13 @@ def update_product(product_id):
     if image_filenames:
         image_paths = ', '.join(image_filenames)
         conn = get_db_connection()
-        conn.execute('UPDATE products SET name = ?, description = ?, price = ?, image = ?, category = ? WHERE id = ?', (name, description, price, image_paths, category, product_id))
+        conn.execute('UPDATE products SET name = ?, description = ?, price = ?, offer_price = ?, image = ?, category = ?, colors = ?, condition = ? WHERE id = ?', (name, description, price, offer_price, image_paths, category, colors, condition, product_id))
         conn.commit()
         conn.close()
     else:
         # If no new images, update other fields without changing the image path
         conn = get_db_connection()
-        conn.execute('UPDATE products SET name = ?, description = ?, price = ?, category = ? WHERE id = ?', (name, description, price, category, product_id))
+        conn.execute('UPDATE products SET name = ?, description = ?, price = ?, offer_price = ?, category = ?, colors = ?, condition = ? WHERE id = ?', (name, description, price, offer_price, category, colors, condition, product_id))
         conn.commit()
         conn.close()
     return jsonify({"message": "success", "changes": 1})

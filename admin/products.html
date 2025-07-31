@@ -28,11 +28,31 @@
             <form id="addProductForm">
                 <input type="text" id="productName" placeholder="Product Name" required>
                 <textarea id="productDescription" placeholder="Product Description"></textarea>
-                <input type="number" id="productPrice" placeholder="Price" step="0.01" required>
+                <input type="number" id="productPrice" placeholder="Regular Price" step="0.01" required>
+                <input type="number" id="productOfferPrice" placeholder="Offer Price" step="0.01">
                 <input type="file" id="productImage" accept="image/*" multiple>
+                <p>Max 5 photos</p>
                 <select id="productCategory" required>
                     <option value="">Select a Category</option>
                 </select>
+                <select id="productCondition" required>
+                    <option value="">Select Condition</option>
+                    <option value="New">New</option>
+                    <option value="Used">Used</option>
+                </select>
+                <div>
+                    <label>Colors:</label>
+                    <input type="checkbox" id="colorRed" name="color" value="Red">
+                    <label for="colorRed">Red</label>
+                    <input type="checkbox" id="colorGreen" name="color" value="Green">
+                    <label for="colorGreen">Green</label>
+                    <input type="checkbox" id="colorBlue" name="color" value="Blue">
+                    <label for="colorBlue">Blue</label>
+                    <input type="checkbox" id="colorBlack" name="color" value="Black">
+                    <label for="colorBlack">Black</label>
+                    <input type="checkbox" id="colorWhite" name="color" value="White">
+                    <label for="colorWhite">White</label>
+                </div>
                 <button type="submit">Add Product</button>
             </form>
 
@@ -53,6 +73,7 @@
                     <!-- Product rows will be inserted here by JavaScript -->
                 </tbody>
             </table>
+            <div id="pagination-container" class="mt-4"></div>
         </section>
     </div>
     <script src="app.js"></script>

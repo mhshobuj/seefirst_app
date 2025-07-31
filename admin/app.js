@@ -71,8 +71,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // --- Existing Functions (moved below for clarity) ---
-    async function loadProducts() {
-        const response = await fetch('http://localhost:3000/api/products');
+    async function loadProducts(page = 1) {
+        const response = await fetch(`http://localhost:3000/api/products?page=${page}`);
         const data = await response.json();
         const productsTableBody = document.querySelector('#productsTable tbody');
         productsTableBody.innerHTML = '';
@@ -94,6 +94,113 @@ document.addEventListener('DOMContentLoaded', () => {
             deleteButton.onclick = () => deleteProduct(product.id);
             actionsCell.appendChild(deleteButton);
         });
+        renderPagination(data.total_pages, data.current_page);
+    }
+
+    function renderPagination(totalPages, currentPage) {
+        const paginationContainer = document.querySelector('#pagination-container');
+        if (!paginationContainer) return;
+
+        paginationContainer.innerHTML = ''; // Clear existing pagination
+
+        if (totalPages <= 1) {
+            paginationContainer.style.display = 'none'; // Hide pagination if only one page or less
+            return;
+        }
+
+        paginationContainer.style.display = 'flex'; // Show pagination
+
+        let paginationHtml = `
+            <ul class="pagination justify-content-center">
+                <li class="page-item ${currentPage === 1 ? 'disabled' : ''}">
+                    <a class="page-link" href="#" data-page="${currentPage - 1}" aria-label="Previous">
+                        <span aria-hidden="true">&laquo;</span>
+                    </a>
+                </li>
+        `;
+
+        for (let i = 1; i <= totalPages; i++) {
+            paginationHtml += `
+                <li class="page-item ${currentPage === i ? 'active' : ''}">
+                    <a class="page-link" href="#" data-page="${i}">${i}</a>
+                </li>
+            `;
+        }
+
+        paginationHtml += `
+                <li class="page-item ${currentPage === totalPages ? 'disabled' : ''}">
+                    <a class="page-link" href="#" data-page="${currentPage + 1}" aria-label="Next">
+                        <span aria-hidden="true">&raquo;</span>
+                    </a>
+                </li>
+            </ul>
+        `;
+
+        paginationContainer.innerHTML = paginationHtml;
+
+        // Add event listeners to pagination links
+        paginationContainer.querySelectorAll('.page-link').forEach(link => {
+            link.addEventListener('click', function(event) {
+                event.preventDefault();
+                const newPage = parseInt(this.dataset.page);
+                if (newPage >= 1 && newPage <= totalPages) {
+                    loadProducts(newPage);
+                }
+            });
+        });
+    }
+
+    function renderPagination(totalPages, currentPage) {
+        const paginationContainer = document.querySelector('#pagination-container');
+        if (!paginationContainer) return;
+
+        paginationContainer.innerHTML = ''; // Clear existing pagination
+
+        if (totalPages <= 1) {
+            paginationContainer.style.display = 'none'; // Hide pagination if only one page or less
+            return;
+        }
+
+        paginationContainer.style.display = 'flex'; // Show pagination
+
+        let paginationHtml = `
+            <ul class="pagination justify-content-center">
+                <li class="page-item ${currentPage === 1 ? 'disabled' : ''}">
+                    <a class="page-link" href="#" data-page="${currentPage - 1}" aria-label="Previous">
+                        <span aria-hidden="true">&laquo;</span>
+                    </a>
+                </li>
+        `;
+
+        for (let i = 1; i <= totalPages; i++) {
+            paginationHtml += `
+                <li class="page-item ${currentPage === i ? 'active' : ''}">
+                    <a class="page-link" href="#" data-page="${i}">${i}</a>
+                </li>
+            `;
+        }
+
+        paginationHtml += `
+                <li class="page-item ${currentPage === totalPages ? 'disabled' : ''}">
+                    <a class="page-link" href="#" data-page="${currentPage + 1}" aria-label="Next">
+                        <span aria-hidden="true">&raquo;</span>
+                    </a>
+                </li>
+            </ul>
+        `;
+
+        paginationContainer.innerHTML = paginationHtml;
+
+        // Add event listeners to pagination links
+        paginationContainer.querySelectorAll('.page-link').forEach(link => {
+            link.addEventListener('click', function(event) {
+                event.preventDefault();
+                const newPage = parseInt(this.dataset.page);
+                if (newPage >= 1 && newPage <= totalPages) {
+                    loadProducts(newPage);
+                }
+            });
+        });
     }
 
     async function addProduct(event) {
@@ -102,19 +209,34 @@ document.addEventListener('DOMContentLoaded', () => {
         formData.append('name', document.getElementById('productName').value);
         formData.append('description', document.getElementById('productDescription').value);
         formData.append('price', parseFloat(document.getElementById('productPrice').value));
+        formData.append('offer_price', parseFloat(document.getElementById('productOfferPrice').value) || 0.0);
         formData.append('category', document.getElementById('productCategory').value);
+        formData.append('condition', document.getElementById('productCondition').value);
+
+        const colors = [];
+        document.querySelectorAll('input[name="color"]:checked').forEach(checkbox => {
+            colors.push(checkbox.value);
+        });
+        formData.append('colors', colors.join(','));
 
         const imageInput = document.getElementById('productImage');
+        if (imageInput.files.length > 5) {
+            alert('You can upload a maximum of 5 images.');
+            return;
+        }
         for (const file of imageInput.files) {
             formData.append('images', file); // Append each file with the key 'images'
         }
 
-        await fetch('http://localhost:3000/api/products', {
+        fetch('http://localhost:3000/api/products', {
             method: 'POST',
             body: formData // FormData does not need Content-Type header
+        }).then(response => {
+            if (response.ok) {
+                loadProducts();
+                event.target.reset();
+            }
         });
-        loadProducts();
-        event.target.reset();
     }
 
     async function editProduct(product) {
