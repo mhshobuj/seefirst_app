@@ -169,12 +169,6 @@ footer {
 }
 
 /* Pagination Styling */
-#pagination-container {
-    display: flex;
-    justify-content: center;
-    margin-top: 20px;
-}
-
 .pagination .page-item .page-link {
     border-radius: 50% !important; /* Make them round */
     margin: 0 5px; /* Space between circles */
