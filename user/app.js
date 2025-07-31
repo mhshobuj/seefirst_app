@@ -238,52 +238,72 @@ document.addEventListener('DOMContentLoaded', async () => {
     async function loadProductDetail(productId) {
         console.log(`Loading product detail for ID: ${productId}`);
         const response = await fetch(`http://localhost:3000/api/products/${productId}`);
-        const data = await response.json(); // Correctly parse the JSON response
+        const data = await response.json();
         const product = data.data;
         console.log('Product detail data:', product);
         const productDetailContainer = document.querySelector('#product-detail-container');
 
         if (product && productDetailContainer) {
+            const images = product.image ? product.image.split(',').map(img => img.trim()) : [];
+            const mainImage = images.length > 0 ? `http://localhost:3000/uploads/${images[0]}` : 'https://placehold.co/600x400';
+
             productDetailContainer.innerHTML = `
                 <div class="row">
-                    <div class="col-md-6">
-                    <div id="productImageCarousel" class="carousel slide" data-bs-ride="carousel">
-                        <div class="carousel-inner">
-                            ${product.image.split(',').map((img, index) => `
-                                <div class="carousel-item ${index === 0 ? 'active' : ''}">
-                                    <img src="http://localhost:3000/uploads/${img.trim()}" class="d-block w-100 img-fluid rounded shadow-sm" alt="${product.name} Image ${index + 1}">
-                                </div>
-                            `).join('')}
+                    <div class="col-lg-6">
+                        <div class="product-gallery">
+                            <div class="main-image-container mb-3">
+                                <img src="${mainImage}" id="mainProductImage" class="img-fluid rounded shadow-sm w-100" alt="${product.name}">
+                            </div>
+                            <div class="thumbnail-container d-flex gap-2">
+                                ${images.map(img => `
+                                    <img src="http://localhost:3000/uploads/${img}" class="img-thumbnail product-thumbnail" alt="Thumbnail">
+                                `).join('')}
+                            </div>
                         </div>
-                        ${product.image.split(',').length > 1 ? `
-                        <button class="carousel-control-prev" type="button" data-bs-target="#productImageCarousel" data-bs-slide="prev">
-                            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-                            <span class="visually-hidden">Previous</span>
-                        </button>
-                        <button class="carousel-control-next" type="button" data-bs-target="#productImageCarousel" data-bs-slide="next">
-                            <span class="carousel-control-next-icon" aria-hidden="true"></span>
-                            <span class="visually-hidden">Next</span>
-                        </button>
-                        ` : ''}
                     </div>
-                </div>
-                    <div class="col-md-6">
-                        <h2 class="display-5 fw-bold">${product.name}</h2>
-                        <p class="lead text-muted mt-2">${product.description}</p>
-                        <h3 class="text-primary fw-bold mt-4">Price: ৳${product.price.toFixed(2)}</h3>
-                        
-                        <h4 class="mt-4">Category:</h4>
-                        <ul class="list-unstyled text-muted mt-2">
-                            <li><i class="bi bi-tag-fill text-primary me-2"></i>${product.category}</li>
-                        </ul>
+                    <div class="col-lg-6">
+                        <div class="product-details-info">
+                            <h2 class="display-5 fw-bold">${product.name}</h2>
+                            <p class="lead text-muted mt-2">${product.description}</p>
+                            <h3 class="text-primary fw-bold mt-4">Price: ৳${product.price.toFixed(2)}</h3>
 
-                        <h4 class="mt-5">Book a Home Preview:</h4>
-                        <p class="text-muted">See the device at your doorstep before you buy! For just ৳200, we’ll bring this ${product.name} to your home for a personal inspection. If you decide to purchase the device, the ৳200 preview fee will be fully refunded. This ensures you’re 100% satisfied before making a commitment.</p>
-                        <a href="contact.html#book-preview-section" class="btn btn-primary btn-lg rounded-pill mt-3 me-3">Book a Preview (৳200)</a>
-                        <a href="cart.html" class="btn btn-primary btn-lg rounded-pill mt-3"><i class="bi bi-cart-plus-fill me-2"></i>Add to Cart</a>
+                            <div class="mt-4">
+                                <h4 class="mb-3">Color:</h4>
+                                <div class="product-color-selector d-flex gap-2">
+                                    <div class="color-swatch" style="background-color: #000000;" data-color="Black"></div>
+                                    <div class="color-swatch" style="background-color: #FFFFFF; border: 1px solid #dee2e6;" data-color="White"></div>
+                                    <div class="color-swatch" style="background-color: #007bff;" data-color="Blue"></div>
+                                    <div class="color-swatch" style="background-color: #dc3545;" data-color="Red"></div>
+                                </div>
+                            </div>
+
+                            <h4 class="mt-5">Book a Home Preview:</h4>
+                            <p class="text-muted">See the device at your doorstep before you buy! For just ৳200, we’ll bring this ${product.name} to your home for a personal inspection. If you decide to purchase the device, the ৳200 preview fee will be fully refunded. This ensures you’re 100% satisfied before making a commitment.</p>
+                            <div class="d-flex mt-4">
+                                <a href="contact.html#book-preview-section" class="btn btn-outline-primary btn-lg rounded-pill me-3">Book a Preview (৳200)</a>
+                                <a href="cart.html" class="btn btn-primary btn-lg rounded-pill"><i class="bi bi-cart-plus-fill me-2"></i>Add to Cart</a>
+                            </div>
+                        </div>
                     </div>
                 </div>
             `;
+
+            // Add event listeners after setting innerHTML
+            document.querySelectorAll('.product-thumbnail').forEach(thumbnail => {
+                thumbnail.addEventListener('click', function() {
+                    document.getElementById('mainProductImage').src = this.src;
+                    document.querySelectorAll('.product-thumbnail').forEach(t => t.classList.remove('active'));
+                    this.classList.add('active');
+                });
+            });
+
+            document.querySelectorAll('.color-swatch').forEach(option => {
+                option.addEventListener('click', function() {
+                    document.querySelectorAll('.color-swatch').forEach(o => o.classList.remove('selected'));
+                    this.classList.add('selected');
+                });
+            });
+
         } else if (productDetailContainer) {
             productDetailContainer.innerHTML = '<p>Product not found.</p>';
         }

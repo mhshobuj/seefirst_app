@@ -326,3 +326,41 @@ footer {
     padding: 0 5px; /* Add some padding between items */
     box-sizing: border-box; /* Include padding in the width calculation */
 }
+
+/* Product Detail Page Specific Styles */
+.product-gallery .main-image-container {
+    border: 1px solid #dee2e6;
+    padding: 1rem;
+    border-radius: .25rem;
+}
+
+.product-gallery .thumbnail-container .product-thumbnail {
+    width: 80px;
+    height: 80px;
+    object-fit: cover;
+    cursor: pointer;
+    border: 2px solid transparent;
+    border-radius: .25rem;
+    transition: border-color 0.2s ease-in-out;
+}
+
+.product-gallery .thumbnail-container .product-thumbnail.active,
+.product-gallery .thumbnail-container .product-thumbnail:hover {
+    border-color: #007bff;
+}
+
+.product-color-selector .color-swatch {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.product-color-selector .color-swatch:hover {
+    transform: scale(1.1);
+}
+
+.product-color-selector .color-swatch.selected {
+    box-shadow: 0 0 0 3px #007bff;
+}
