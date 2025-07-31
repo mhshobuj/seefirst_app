@@ -238,7 +238,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     async function loadProductDetail(productId) {
         console.log(`Loading product detail for ID: ${productId}`);
         const response = await fetch(`http://localhost:3000/api/products/${productId}`);
-        const data = response.json();
+        const data = await response.json(); // Correctly parse the JSON response
         const product = data.data;
         console.log('Product detail data:', product);
         const productDetailContainer = document.querySelector('#product-detail-container');
@@ -261,7 +261,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                             <span class="visually-hidden">Previous</span>
                         </button>
                         <button class="carousel-control-next" type="button" data-bs-target="#productImageCarousel" data-bs-slide="next">
-                            <span class="carousel-control-next-icon" aria="true"></span>
+                            <span class="carousel-control-next-icon" aria-hidden="true"></span>
                             <span class="visually-hidden">Next</span>
                         </button>
                         ` : ''}
