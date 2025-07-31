@@ -113,6 +113,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 `;
                 productContainer.innerHTML += productCard;
             });
+            renderPagination(totalPages, currentPage, categoryId, sort, searchQuery); // Call renderPagination here
         }
     }
 

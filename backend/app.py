@@ -247,6 +247,17 @@ def update_product(product_id):
 @app.route('/api/products/<int:product_id>', methods=['DELETE'])
 def delete_product(product_id):
     conn = get_db_connection()
+    product = conn.execute('SELECT image FROM products WHERE id = ?', (product_id,)).fetchone()
+    if product and product['image']:
+        image_filenames = product['image'].split(',')
+        for filename in image_filenames:
+            filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename.strip())
+            if os.path.exists(filepath):
+                try:
+                    os.remove(filepath)
+                except OSError as e:
+                    print(f"Error deleting product image {filepath}: {e}")
+
     conn.execute('DELETE FROM products WHERE id = ?', (product_id,))
     conn.commit()
     conn.close()
@@ -306,6 +317,16 @@ def update_category(category_id):
 @app.route('/api/categories/<int:category_id>', methods=['DELETE'])
 def delete_category(category_id):
     conn = get_db_connection()
+    category = conn.execute('SELECT image FROM categories WHERE id = ?', (category_id,)).fetchone()
+    if category and category['image']:
+        image_filename = category['image']
+        filepath = os.path.join(app.config['UPLOAD_FOLDER'], image_filename)
+        if os.path.exists(filepath):
+            try:
+                os.remove(filepath)
+            except OSError as e:
+                print(f"Error deleting category image {filepath}: {e}")
+
     conn.execute('DELETE FROM categories WHERE id = ?', (category_id,))
     conn.commit()
     conn.close()
@@ -394,20 +415,19 @@ def add_banner():
 def delete_banner(banner_id):
     conn = get_db_connection()
     banner = conn.execute('SELECT image FROM banners WHERE id = ?', (banner_id,)).fetchone()
-    if banner:
+    if banner and banner['image']:
         image_filename = banner['image']
-        conn.execute('DELETE FROM banners WHERE id = ?', (banner_id,))
-        conn.commit()
-        conn.close()
-        
-        # Delete image file from uploads folder
         filepath = os.path.join(app.config['UPLOAD_FOLDER'], image_filename)
         if os.path.exists(filepath):
-            os.remove(filepath)
-            return jsonify({"message": "deleted", "changes": 1})
-        return jsonify({"message": "deleted from db, file not found"}), 200
+            try:
+                os.remove(filepath)
+            except OSError as e:
+                print(f"Error deleting banner image {filepath}: {e}")
+
+    conn.execute('DELETE FROM banners WHERE id = ?', (banner_id,))
+    conn.commit()
     conn.close()
-    return jsonify({"error": "Banner not found"}), 404
+    return jsonify({"message": "deleted", "changes": 1})
 
 if __name__ == '__main__':
     app.run(debug=True, port=3000)
