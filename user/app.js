@@ -1,6 +1,47 @@
 document.addEventListener('DOMContentLoaded', async () => {
     const path = window.location.pathname;
 
+    // Function to update cart count in navbar
+    function updateCartCount() {
+        const cart = JSON.parse(localStorage.getItem('cart')) || [];
+        const cartCount = cart.reduce((total, item) => total + item.quantity, 0);
+        const cartIcon = document.querySelector('.bi-cart-fill');
+        if (cartIcon) {
+            let countElement = cartIcon.querySelector('.cart-count');
+            if (!countElement) {
+                countElement = document.createElement('span');
+                countElement.className = 'cart-count position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger';
+                cartIcon.classList.add('position-relative');
+                cartIcon.appendChild(countElement);
+            }
+            countElement.textContent = cartCount;
+            countElement.style.display = cartCount > 0 ? 'block' : 'none';
+        }
+    }
+
+    // Function to add product to cart
+    async function addToCart(productId) {
+        const response = await fetch(`http://localhost:3000/api/products/${productId}`);
+        const data = await response.json();
+        const product = data.data;
+
+        if (product) {
+            let cart = JSON.parse(localStorage.getItem('cart')) || [];
+            const existingProduct = cart.find(item => item.id === product.id);
+
+            if (existingProduct) {
+                existingProduct.quantity++;
+            } else {
+                product.quantity = 1;
+                cart.push(product);
+            }
+
+            localStorage.setItem('cart', JSON.stringify(cart));
+            updateCartCount();
+            alert(`${product.name} has been added to your cart.`);
+        }
+    }
+
     // Function to fetch and display products
     async function loadProducts(containerSelector, limit = null, cardClass = '', categoryId = null, sort = null, isCarousel = false, searchQuery = null, page = 1, showShimmer = false) {
         const productContainer = document.querySelector(containerSelector);
@@ -282,7 +323,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                             <p class="text-muted">See the device at your doorstep before you buy! For just ৳200, we’ll bring this ${product.name} to your home for a personal inspection. If you decide to purchase the device, the ৳200 preview fee will be fully refunded. This ensures you’re 100% satisfied before making a commitment.</p>
                             <div class="d-flex mt-4">
                                 <a href="contact.html#book-preview-section" class="btn btn-outline-primary btn-lg rounded-pill me-3">Book a Preview (৳200)</a>
-                                <a href="cart.html" class="btn btn-primary btn-lg rounded-pill"><i class="bi bi-cart-plus-fill me-2"></i>Add to Cart</a>
+                                <button class="btn btn-primary btn-lg rounded-pill" id="add-to-cart-btn"><i class="bi bi-cart-plus-fill me-2"></i>Add to Cart</button>
                             </div>
                         </div>
                     </div>
@@ -290,6 +331,10 @@ document.addEventListener('DOMContentLoaded', async () => {
             `;
 
             // Add event listeners after setting innerHTML
+            document.getElementById('add-to-cart-btn').addEventListener('click', () => {
+                addToCart(product.id);
+            });
+
             document.querySelectorAll('.product-thumbnail').forEach(thumbnail => {
                 thumbnail.addEventListener('click', function() {
                     document.getElementById('mainProductImage').src = this.src;
@@ -386,4 +431,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
         });
     }
+
+    // Initial cart count update
+    updateCartCount();
 });
