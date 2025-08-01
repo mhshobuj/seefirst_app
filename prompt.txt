@@ -1,12 +1,12 @@
 Project Structure:
 - Navigate to the "user" directory.
-- Locate and open the "products.html" file.
+- Locate and open the "product-detail.html" file.
 
 Task Requirement:
-- great the shimmer is worked could you add 10 items for shimmer effect design.
+- this page have a color section. need some update on that if the color are have on this product then show color by fetching details from API. if no color are available then hide the color section.
 
 Constraints:
-- Do not modify or affect any other existing functionality, layout, or design within "index.html" or any other project files.
+- Do not modify or affect any other existing functionality, layout, or design within "product-detail.html" or any other project files.
 - Ensure the update is clean, minimal, and adheres to best practices in HTML/JavaScript.
 
 Output:

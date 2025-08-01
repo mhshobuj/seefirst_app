@@ -289,6 +289,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             const images = product.image ? product.image.split(',').map(img => img.trim()) : [];
             const mainImage = images.length > 0 ? `http://localhost:3000/uploads/${images[0]}` : 'https://placehold.co/600x400';
 
+            const colors = product.colors ? product.colors.split(',').map(color => color.trim()) : [];
+
             productDetailContainer.innerHTML = `
                 <div class="row">
                     <div class="col-lg-6">
@@ -309,15 +311,14 @@ document.addEventListener('DOMContentLoaded', async () => {
                             <p class="lead text-muted mt-2">${product.description}</p>
                             <h3 class="text-primary fw-bold mt-4">Price: ৳${product.price.toFixed(2)}</h3>
 
+                            ${colors.length > 0 ? `
                             <div class="mt-4">
                                 <h4 class="mb-3">Color:</h4>
                                 <div class="product-color-selector d-flex gap-2">
-                                    <div class="color-swatch" style="background-color: #000000;" data-color="Black"></div>
-                                    <div class="color-swatch" style="background-color: #FFFFFF; border: 1px solid #dee2e6;" data-color="White"></div>
-                                    <div class="color-swatch" style="background-color: #007bff;" data-color="Blue"></div>
-                                    <div class="color-swatch" style="background-color: #dc3545;" data-color="Red"></div>
+                                    ${colors.map(color => `<div class="color-swatch" style="background-color: ${color};" data-color="${color}"></div>`).join('')}
                                 </div>
                             </div>
+                            ` : ''}
 
                             <h4 class="mt-5">Book a Home Preview:</h4>
                             <p class="text-muted">See the device at your doorstep before you buy! For just ৳200, we’ll bring this ${product.name} to your home for a personal inspection. If you decide to purchase the device, the ৳200 preview fee will be fully refunded. This ensures you’re 100% satisfied before making a commitment.</p>
