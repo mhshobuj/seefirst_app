@@ -1,0 +1,14 @@
+Project Structure:
+- Navigate to the "user" directory.
+- Locate and open the "products.html" file.
+
+Task Requirement:
+- great the shimmer is worked could you add 10 items for shimmer effect design.
+
+Constraints:
+- Do not modify or affect any other existing functionality, layout, or design within "index.html" or any other project files.
+- Ensure the update is clean, minimal, and adheres to best practices in HTML/JavaScript.
+
+Output:
+- Provide the modified section of code only.
+- Ensure all changes are clearly marked or explained if needed.

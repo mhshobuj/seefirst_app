@@ -10,7 +10,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             let countElement = cartIcon.querySelector('.cart-count');
             if (!countElement) {
                 countElement = document.createElement('span');
-                countElement.className = 'cart-count position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger';
+                countElement.className = 'cart-count position-absolute top-0 start-100 translate-middle badge rounded-pill bg-primary px-2 py-1 fs-9';
                 cartIcon.classList.add('position-relative');
                 cartIcon.appendChild(countElement);
             }
@@ -43,13 +43,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     // Function to fetch and display products
-    async function loadProducts(containerSelector, limit = null, cardClass = '', categoryId = null, sort = null, isCarousel = false, searchQuery = null, page = 1, showShimmer = false) {
+    async function loadProducts(containerSelector, limit = null, cardClass = '', categoryId = null, sort = null, isCarousel = false, searchQuery = null, page = 1, showShimmer = true) {
         const productContainer = document.querySelector(containerSelector);
         if (!productContainer) return;
 
         if (showShimmer) {
             productContainer.innerHTML = ''; // Clear existing content before showing shimmer
-            const shimmerCount = limit || 8; // Show 8 shimmer cards by default or based on limit
+            const shimmerCount = limit || 10; // Show 10 shimmer cards by default or based on limit
             for (let i = 0; i < shimmerCount; i++) {
                 const shimmerCard = `
                     <div class="col-6 col-md-3">
