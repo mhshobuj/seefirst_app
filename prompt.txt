@@ -3,7 +3,12 @@ Project Structure:
 - Locate and open the "cart.html" file.
 
 Task Requirement:
--check your logic correctly, there have no button on the cart page
+-Great, now work on "Confirm" button click functionality
+-Create a new booking page, which have the user name, phone, preview preferred location, preview date, bkash trx number. name and number should be get from user table. 
+-if the user are not login in this system then said to login if have an account or create new account.
+-login in possible with phone/email and pass
+-registration with name, phone, email(optional), password
+-do all of these thing step by step. if need you can break down work part by part.
  
 Constraints:
 - Do not modify or affect any other existing functionality, layout, or design or any other project files if need     modify the other page based on requirement then do it.

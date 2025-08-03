@@ -70,10 +70,44 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
     <script src="app.js"></script>
     <script>
+        // Modal HTML structure
+        const previewModalHtml = `
+            <div class="modal fade" id="previewConfirmationModal" tabindex="-1" aria-labelledby="previewConfirmationModalLabel" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="previewConfirmationModalLabel">Request for Home Preview</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <p>পণ্য প্রিভিউয়ের জন্য আপনাকে ধন্যবাদ।</p>
+                            <p>আপনার হোম প্রিভিউ বুকিংটি নিশ্চিত করতে, আপনাকে আগাম ২০০ টাকা বিকাশের মাধ্যমে পরিশোধ করতে অনুরোধ করা হচ্ছে। পেমেন্ট সম্পন্ন করার পর, অনুগ্রহ করে সংশ্লিষ্ট লেনদেন নম্বর (Trx ID) আমাদের সঙ্গে শেয়ার করুন।</p>
+                            <p><strong>🔹 বিশেষ নোট:</strong></p>
+                            <p>যদি প্রিভিউ শেষে আপনি পণ্যটি ক্রয় করেন, তাহলে বুকিং ফি (২০০ টাকা) সম্পূর্ণরূপে ফেরত দেওয়া হবে।</p>
+                            <p>অন্যথায়, এই পরিমাণটি নন-রিফান্ডেবল বুকিং মানি হিসেবে গণ্য হবে।</p>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                            <button type="button" class="btn btn-primary" id="continuePreviewBtn">Continue</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+        document.body.insertAdjacentHTML('beforeend', previewModalHtml);
+
         document.addEventListener('DOMContentLoaded', () => {
+            // Event listener for the Continue button in the modal
+            document.getElementById('continuePreviewBtn').addEventListener('click', () => {
+                const isLoggedIn = localStorage.getItem('isLoggedIn'); // Assuming 'isLoggedIn' is set on login
+                if (isLoggedIn === 'true') {
+                    window.location.href = 'book-preview.html'; // Redirect to booking page
+                } else {
+                    window.location.href = 'login.html'; // Redirect to login/registration page
+                }
+            });
             const cartContainer = document.getElementById('cart-container');
             const cart = JSON.parse(localStorage.getItem('cart')) || [];
-            console.log('Cart data from localStorage:', cart);
 
             let total = 0;
             let cartHtml = '';
@@ -82,7 +116,6 @@
                 cartContainer.innerHTML = '<p>Your cart is empty.</p>';
             } else {
                 cart.forEach(product => {
-                    console.log('Processing product:', product);
                     const imageUrl = product.image ? `http://localhost:3000/uploads/${product.image.split(',')[0].trim()}` : 'https://placehold.co/200x150';
                     total += product.price * product.quantity;
                     cartHtml += `
@@ -108,9 +141,7 @@
                         </div>
                     `;
                 });
-                console.log('Generated cartHtml:', cartHtml);
                 cartContainer.innerHTML = cartHtml;
-                console.log('Cart container innerHTML set.');
             }
 
             document.getElementById('cart-total-amount').textContent = total.toFixed(2);
@@ -120,6 +151,10 @@
             if (requestPreviewBtn) {
                 if (hasUsedProduct) {
                     requestPreviewBtn.style.display = 'inline-block';
+                    requestPreviewBtn.addEventListener('click', () => {
+                        const previewModal = new bootstrap.Modal(document.getElementById('previewConfirmationModal'));
+                        previewModal.show();
+                    });
                 } else {
                     requestPreviewBtn.style.display = 'none';
                 }

@@ -60,11 +60,9 @@ document.addEventListener('DOMContentLoaded', async () => {
                         <div class="card shadow-sm h-100 ${cardClass}">
                             <div class="shimmer-wrapper">
                                 <div class="shimmer-image card-img-top"></div>
-                                <div class="card-body p-2">
-                                    <div class="shimmer-line shimmer-title-line"></div>
-                                    <div class="shimmer-line shimmer-price-line"></div>
-                                    <div class="shimmer-button"></div>
-                                </div>
+                                <div class="shimmer-line shimmer-title-line"></div>
+                                <div class="shimmer-line shimmer-price-line"></div>
+                                <div class="shimmer-button"></div>
                             </div>
                         </div>
                     </div>
@@ -424,6 +422,111 @@ document.addEventListener('DOMContentLoaded', async () => {
         loadBanners(); // Load banners for the index page
         await loadProducts('#new-arrivals-container', 10, '', null, 'newest', true, null, 1, false); // Do not show shimmer for new arrivals
         loadProducts('#featured-products-container', 8, 'featured-product-card', null, null, false, null, 1, false); // Do not show shimmer for featured products
+    } else if (path.includes('login.html')) {
+        const loginForm = document.getElementById('loginForm');
+        const registerForm = document.getElementById('registerForm');
+
+        if (loginForm) {
+            loginForm.addEventListener('submit', async (event) => {
+                event.preventDefault();
+                const identifier = document.getElementById('loginEmailPhone').value;
+                const password = document.getElementById('loginPassword').value;
+                const loginMessage = document.getElementById('loginMessage');
+
+                try {
+                    const response = await fetch('http://localhost:3000/api/user/login', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ identifier, password })
+                    });
+                    const data = await response.json();
+
+                    if (response.ok) {
+                        localStorage.setItem('isLoggedIn', 'true');
+                        localStorage.setItem('userData', JSON.stringify(data.user));
+                        window.location.href = 'index.html'; // Redirect to home or previous page
+                    } else {
+                        loginMessage.textContent = data.error || 'Login failed';
+                        loginMessage.style.color = 'red';
+                    }
+                } catch (error) {
+                    console.error('Error during login:', error);
+                    loginMessage.textContent = 'An error occurred during login.';
+                    loginMessage.style.color = 'red';
+                }
+            });
+        }
+
+        if (registerForm) {
+            registerForm.addEventListener('submit', async (event) => {
+                event.preventDefault();
+                const name = document.getElementById('registerName').value;
+                const phone = document.getElementById('registerPhone').value;
+                const email = document.getElementById('registerEmail').value;
+                const password = document.getElementById('registerPassword').value;
+                const registerMessage = document.getElementById('registerMessage');
+
+                try {
+                    const response = await fetch('http://localhost:3000/api/user/register', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ name, phone, email, password })
+                    });
+                    const data = await response.json();
+
+                    if (response.ok) {
+                        registerMessage.textContent = data.message || 'Registration successful!';
+                        registerMessage.style.color = 'green';
+                        registerForm.reset();
+                        // Optionally switch to login tab
+                        const loginTab = new bootstrap.Tab(document.getElementById('login-tab'));
+                        loginTab.show();
+                    } else {
+                        registerMessage.textContent = data.error || 'Registration failed';
+                        registerMessage.style.color = 'red';
+                    }
+                } catch (error) {
+                    console.error('Error during registration:', error);
+                    registerMessage.textContent = 'An error occurred during registration.';
+                    registerMessage.style.color = 'red';
+                }
+            });
+        }
+    } else if (path.includes('book-preview.html')) {
+        const isLoggedIn = localStorage.getItem('isLoggedIn');
+        const userData = JSON.parse(localStorage.getItem('userData'));
+
+        if (isLoggedIn !== 'true' || !userData) {
+            window.location.href = 'login.html'; // Redirect to login if not logged in
+            return;
+        }
+
+        document.getElementById('userName').value = userData.name || '';
+        document.getElementById('userPhone').value = userData.phone || '';
+
+        const previewBookingForm = document.getElementById('previewBookingForm');
+        if (previewBookingForm) {
+            previewBookingForm.addEventListener('submit', async (event) => {
+                event.preventDefault();
+                // Here you would collect form data and send it to a backend API
+                // For now, just log it and show a success message
+                const bookingData = {
+                    userName: document.getElementById('userName').value,
+                    userPhone: document.getElementById('userPhone').value,
+                    previewLocation: document.getElementById('previewLocation').value,
+                    previewDate: document.getElementById('previewDate').value,
+                    bkashTrxId: document.getElementById('bkashTrxId').value
+                };
+                console.log('Booking Data:', bookingData);
+                alert('Preview booking confirmed! We will contact you shortly.');
+                // Optionally redirect or clear form
+                previewBookingForm.reset();
+            });
+        }
     }
 
     // Handle search form submission

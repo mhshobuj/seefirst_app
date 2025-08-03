@@ -98,6 +98,15 @@ def init_db():
                 image TEXT NOT NULL
             )
         ''')
+        db.execute('''
+            CREATE TABLE IF NOT EXISTS users (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                name TEXT NOT NULL,
+                phone TEXT NOT NULL UNIQUE,
+                email TEXT UNIQUE,
+                password TEXT NOT NULL
+            )
+        ''')
         db.commit()
         db.close()
 
@@ -373,6 +382,46 @@ def admin_login():
     # Static credentials for demonstration purposes
     if email == 'admin@gmail.com' and password == '12345678':
         return jsonify({"message": "Login successful"}), 200
+    else:
+        return jsonify({"error": "Invalid credentials"}), 401
+
+@app.route('/api/user/register', methods=['POST'])
+def user_register():
+    data = request.json
+    name = data.get('name')
+    phone = data.get('phone')
+    email = data.get('email')
+    password = data.get('password')
+
+    if not name or not phone or not password:
+        return jsonify({"error": "Name, phone, and password are required"}), 400
+
+    conn = get_db_connection()
+    try:
+        cursor = conn.execute('INSERT INTO users (name, phone, email, password) VALUES (?, ?, ?, ?)', (name, phone, email, password))
+        conn.commit()
+        user_id = cursor.lastrowid
+        conn.close()
+        return jsonify({"message": "User registered successfully", "user_id": user_id}), 201
+    except sqlite3.IntegrityError:
+        conn.close()
+        return jsonify({"error": "Phone or email already registered"}), 409
+
+@app.route('/api/user/login', methods=['POST'])
+def user_login():
+    data = request.json
+    identifier = data.get('identifier') # Can be phone or email
+    password = data.get('password')
+
+    if not identifier or not password:
+        return jsonify({"error": "Identifier (phone/email) and password are required"}), 400
+
+    conn = get_db_connection()
+    user = conn.execute('SELECT * FROM users WHERE phone = ? OR email = ?', (identifier, identifier)).fetchone()
+    conn.close()
+
+    if user and user['password'] == password: # In a real app, use hashed passwords
+        return jsonify({"message": "Login successful", "user": {'id': user['id'], 'name': user['name'], 'phone': user['phone'], 'email': user['email']}}), 200
     else:
         return jsonify({"error": "Invalid credentials"}), 401
 
