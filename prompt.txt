@@ -3,10 +3,11 @@ Project Structure:
 - Locate and open the "product-detail.html" file.
 
 Task Requirement:
-- this page have a color section. need some update on that if the color are have on this product then show color by fetching details from API. if no color are available then hide the color section.
-
+-Great. when user click on "Add to cart" then this item need to add on cart section
+-when click "Buy now" button then direct to the cart page direct and show the clicked item on the cart page.
+ 
 Constraints:
-- Do not modify or affect any other existing functionality, layout, or design within "product-detail.html" or any other project files.
+- Do not modify or affect any other existing functionality, layout, or design within "product-detail.html" or any other project files if need modify the other page based on requirement then do it.
 - Ensure the update is clean, minimal, and adheres to best practices in HTML/JavaScript.
 
 Output:

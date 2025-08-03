@@ -430,7 +430,7 @@ document.addEventListener('DOMContentLoaded', () => {
     async function loadDashboardSummary() {
         const productsResponse = await fetch('http://localhost:3000/api/products');
         const productsData = await productsResponse.json();
-        document.getElementById('total-products').textContent = productsData.data.length;
+        document.getElementById('total-products').textContent = productsData.total_products;
 
         const ordersResponse = await fetch('http://localhost:3000/api/orders');
         const ordersData = await ordersResponse.json();

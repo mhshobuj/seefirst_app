@@ -20,7 +20,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     // Function to add product to cart
-    async function addToCart(productId) {
+    async function addToCart(productId, redirect = false) {
         const response = await fetch(`http://localhost:3000/api/products/${productId}`);
         const data = await response.json();
         const product = data.data;
@@ -38,7 +38,11 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             localStorage.setItem('cart', JSON.stringify(cart));
             updateCartCount();
-            alert(`${product.name} has been added to your cart.`);
+            if (redirect) {
+                window.location.href = 'cart.html';
+            } else {
+                alert(`${product.name} has been added to your cart.`);
+            }
         }
     }
 
@@ -291,6 +295,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             const colors = product.colors ? product.colors.split(',').map(color => color.trim()) : [];
 
+            const buyButtonText = product.condition === 'Used' ? 'Book a preview(৳200)' : 'Buy Now';
+
             productDetailContainer.innerHTML = `
                 <div class="row">
                     <div class="col-lg-6">
@@ -320,20 +326,21 @@ document.addEventListener('DOMContentLoaded', async () => {
                             </div>
                             ` : ''}
 
-                            <h4 class="mt-5">Book a Home Preview:</h4>
-                            <p class="text-muted">See the device at your doorstep before you buy! For just ৳200, we’ll bring this ${product.name} to your home for a personal inspection. If you decide to purchase the device, the ৳200 preview fee will be fully refunded. This ensures you’re 100% satisfied before making a commitment.</p>
                             <div class="d-flex mt-4">
-                                <a href="contact.html#book-preview-section" class="btn btn-outline-primary btn-lg rounded-pill me-3">Book a Preview (৳200)</a>
-                                <button class="btn btn-primary btn-lg rounded-pill" id="add-to-cart-btn"><i class="bi bi-cart-plus-fill me-2"></i>Add to Cart</button>
+                                <button class="btn btn-primary btn-lg rounded-pill" id="buy-now-btn">${buyButtonText}</button>
+                                <button class="btn btn-outline-primary btn-lg rounded-pill ms-3" id="add-to-cart-btn"><i class="bi bi-cart-plus-fill me-2"></i>Add to Cart</button>
                             </div>
                         </div>
                     </div>
                 </div>
             `;
 
-            // Add event listeners after setting innerHTML
             document.getElementById('add-to-cart-btn').addEventListener('click', () => {
                 addToCart(product.id);
+            });
+
+            document.getElementById('buy-now-btn').addEventListener('click', () => {
+                addToCart(product.id, true); // Pass true to redirect
             });
 
             document.querySelectorAll('.product-thumbnail').forEach(thumbnail => {

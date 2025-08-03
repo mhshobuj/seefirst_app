@@ -162,7 +162,7 @@ def get_products():
 
     products = conn.execute(query, params).fetchall()
     conn.close()
-    return jsonify({"message": "success", "data": [dict(row) for row in products], "total_pages": total_pages, "current_page": page})
+    return jsonify({"message": "success", "data": [dict(row) for row in products], "total_pages": total_pages, "current_page": page, "total_products": total_products})
 
 @app.route('/api/products', methods=['POST'])
 def add_product():
