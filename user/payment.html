@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <title>Checkout - SeeFirst</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="bg-light">
+
+    <!-- Navigation Bar (Copy from index.html) -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-white sticky-top">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="index.html">SeeFirst</a>
+            
+            <div class="collapse navbar-collapse justify-content-center" id="navbarNav">
+                <ul class="navbar-nav mb-2 mb-lg-0">
+                </ul>
+                <div class="w-50 mx-auto">
+                    <form class="d-flex" id="searchForm">
+                        <input class="form-control me-2 w-100" type="search" placeholder="Search products..." aria-label="Search" id="searchInput">
+                    </form>
+                </div>
+                <div class="d-flex align-items-center ms-auto">
+                    <a href="cart.html" class="me-3 text-dark"><i class="bi bi-cart-fill fs-5"></i></a>
+                    <a href="#" class="me-3 text-dark"><i class="bi bi-person-circle fs-5"></i></a>
+                    <div class="dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">EN</a>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li><a class="dropdown-item" href="#">EN</a></li>
+                            <li><a class="dropdown-item" href="#">BD</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-5">
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <div class="card shadow-sm">
+                    <div class="card-body">
+                        <h2 class="card-title text-center mb-4">Checkout</h2>
+                        
+                        <h4 class="mb-3">Order Summary</h4>
+                        <div id="order-summary-list" class="mb-4">
+                            <!-- Cart items will be loaded here -->
+                        </div>
+
+                        <h4 class="mb-3">Delivery Information</h4>
+                        <form id="checkoutForm">
+                            <div class="mb-3">
+                                <label for="customerName" class="form-label">Your Name</label>
+                                <input type="text" class="form-control" id="customerName" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="customerPhone" class="form-label">Your Phone</label>
+                                <input type="text" class="form-control" id="customerPhone" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="deliveryAddress" class="form-label">Delivery Address</label>
+                                <textarea class="form-control" id="deliveryAddress" rows="3" required></textarea>
+                            </div>
+                            <div class="mb-3">
+                                <label for="deliveryLocation" class="form-label">Delivery Location</label>
+                                <select class="form-select" id="deliveryLocation" required>
+                                    <option value="">Select Location</option>
+                                    <option value="inside_dhaka">Inside Dhaka (৳80)</option>
+                                    <option value="outside_dhaka">Outside Dhaka (৳150)</option>
+                                </select>
+                            </div>
+
+                            <h4 class="mb-3 mt-4">Payment Method</h4>
+                            <div class="mb-3">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="paymentMethod" id="cod" value="cod" checked>
+                                    <label class="form-check-label" for="cod">
+                                        Cash on Delivery
+                                    </label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="paymentMethod" id="bkash" value="bkash">
+                                    <label class="form-check-label" for="bkash">
+                                        Bkash (Send Money)
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div id="bkash-details" style="display: none;">
+                                <p class="fw-bold">বিকাশ নম্বর: 01735391232</p>
+                                <p>অনুগ্রহ করে উক্ত নম্বরে টাকা Send Money করুন।</p>
+                                <div class="mb-3">
+                                    <label for="bkashTrxId" class="form-label">Bkash Transaction ID (Trx ID)</label>
+                                    <input type="text" class="form-control" id="bkashTrxId">
+                                </div>
+                            </div>
+
+                            <div class="text-end mt-4">
+                                <h5 class="fw-bold">Subtotal: ৳<span id="subtotal-amount">0.00</span></h5>
+                                <h5 class="fw-bold">Delivery Charge: ৳<span id="delivery-charge-amount">0.00</span></h5>
+                                <h4 class="fw-bold">Total Payable: ৳<span id="total-payable-amount">0.00</span></h4>
+                            </div>
+
+                            <button type="submit" class="btn btn-primary w-100 mt-4">Place Order</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-dark text-white text-center py-4 mt-5">
+        <div class="container">
+            <p class="mb-1">&copy; 2025 SeeFirst. All Rights Reserved.</p>
+            <p class="mb-0"><a href="#" class="text-white-50 text-decoration-none">Terms of Service</a> | <a href="#" class="text-white-50 text-decoration-none">Privacy Policy</a> | <a href="#" class="text-white-50 text-decoration-none">FAQ</a></p>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="app.js?v=1.1"></script>
+</body>
+</html>

@@ -1,17 +1,9 @@
 Project Structure:
 - Navigate to the "user" directory.
-- Locate and open the "book-preview.html" file.
+- Locate and open the "payment.html" file.
 
 Task Requirement:
--this page have also the top nav_bar as other's page have with same design
--name and phone number should be editable
--the have must the preview product list.
--if on cart page there have multiple product few are used and few are new on that case only used products are came to the book preview page.
--above on Bkash Transaction ID (Trx ID) there have a "বিকাশ নম্বর: 01735391232
-অনুগ্রহ করে উক্ত নম্বরে টাকা Send Money করুন।"
--on book preview page there have must two button one is "Cancel" another one is "Confirm Booking"
-after click on confirm booking, based on success request there should show a conformation pop up.
--the pop up have "Home" button after click then go to index.html page
+-Great. now check the payment page logic. when I update the cart item this are not showing dynamically on the payment checkout page.
  
 Constraints:
 - Do not modify or affect any other existing functionality, layout, or design or any other project files if need     modify the other page based on requirement then do it.
