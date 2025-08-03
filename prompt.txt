@@ -1,13 +1,12 @@
 Project Structure:
 - Navigate to the "user" directory.
-- Locate and open the "product-detail.html" file.
+- Locate and open the "cart.html" file.
 
 Task Requirement:
--Great. when user click on "Add to cart" then this item need to add on cart section
--when click "Buy now" button then direct to the cart page direct and show the clicked item on the cart page.
+-check your logic correctly, there have no button on the cart page
  
 Constraints:
-- Do not modify or affect any other existing functionality, layout, or design within "product-detail.html" or any other project files if need modify the other page based on requirement then do it.
+- Do not modify or affect any other existing functionality, layout, or design or any other project files if need     modify the other page based on requirement then do it.
 - Ensure the update is clean, minimal, and adheres to best practices in HTML/JavaScript.
 
 Output:
