@@ -8,6 +8,35 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body class="bg-light">
+
+    <!-- Navigation Bar -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-white sticky-top">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="index.html">SeeFirst</a>
+            
+            <div class="collapse navbar-collapse justify-content-center" id="navbarNav">
+                <ul class="navbar-nav mb-2 mb-lg-0">
+                </ul>
+                <div class="w-50 mx-auto">
+                    <form class="d-flex" id="searchForm">
+                        <input class="form-control me-2 w-100" type="search" placeholder="Search products..." aria-label="Search" id="searchInput">
+                    </form>
+                </div>
+                <div class="d-flex align-items-center ms-auto">
+                    <a href="cart.html" class="me-3 text-dark"><i class="bi bi-cart-fill fs-5"></i></a>
+                    <a href="#" class="me-3 text-dark"><i class="bi bi-person-circle fs-5"></i></a>
+                    <div class="dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">EN</a>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li><a class="dropdown-item" href="#">EN</a></li>
+                            <li><a class="dropdown-item" href="#">BD</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
     <div class="container mt-5">
         <div class="row justify-content-center">
             <div class="col-md-8">
@@ -17,12 +46,18 @@
                         <form id="previewBookingForm">
                             <div class="mb-3">
                                 <label for="userName" class="form-label">Your Name</label>
-                                <input type="text" class="form-control" id="userName" readonly>
+                                <input type="text" class="form-control" id="userName">
                             </div>
                             <div class="mb-3">
                                 <label for="userPhone" class="form-label">Your Phone</label>
-                                <input type="text" class="form-control" id="userPhone" readonly>
+                                <input type="text" class="form-control" id="userPhone">
                             </div>
+                            
+                            <h4 class="mt-4">Products for Preview:</h4>
+                            <div id="preview-products-list" class="mb-3">
+                                <!-- Used products from cart will be listed here -->
+                            </div>
+
                             <div class="mb-3">
                                 <label for="previewLocation" class="form-label">Preferred Preview Location</label>
                                 <input type="text" class="form-control" id="previewLocation" required>
@@ -31,13 +66,38 @@
                                 <label for="previewDate" class="form-label">Preferred Preview Date</label>
                                 <input type="date" class="form-control" id="previewDate" required>
                             </div>
+                            
                             <div class="mb-3">
+                                <p class="fw-bold">bKash Number: 01735391232</p>
+                                <p>অনুগ্রহ করে উক্ত নম্বরে টাকা Send Money করুন।</p>
                                 <label for="bkashTrxId" class="form-label">Bkash Transaction ID (Trx ID)</label>
                                 <input type="text" class="form-control" id="bkashTrxId" required>
                             </div>
-                            <button type="submit" class="btn btn-primary w-100">Confirm Booking</button>
+                            
+                            <div class="d-flex justify-content-between mt-4">
+                                <button type="button" class="btn btn-secondary" id="cancelBookingBtn">Cancel</button>
+                                <button type="submit" class="btn btn-primary">Confirm Booking</button>
+                            </div>
                         </form>
                     </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Confirmation Modal -->
+    <div class="modal fade" id="bookingConfirmationModal" tabindex="-1" aria-labelledby="bookingConfirmationModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="bookingConfirmationModalLabel">Booking Confirmed!</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Your home preview booking has been successfully confirmed. We will contact you shortly with further details.</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" id="homeBtn">Home</button>
                 </div>
             </div>
         </div>

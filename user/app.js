@@ -508,6 +508,32 @@ document.addEventListener('DOMContentLoaded', async () => {
         document.getElementById('userName').value = userData.name || '';
         document.getElementById('userPhone').value = userData.phone || '';
 
+        // Display used products from cart
+        const cart = JSON.parse(localStorage.getItem('cart')) || [];
+        const usedProducts = cart.filter(item => item.condition === 'Used');
+        const previewProductsList = document.getElementById('preview-products-list');
+
+        if (previewProductsList) {
+            if (usedProducts.length > 0) {
+                let productsHtml = '';
+                usedProducts.forEach(product => {
+                    const imageUrl = product.image ? `http://localhost:3000/uploads/${product.image.split(',')[0].trim()}` : 'https://placehold.co/100x100';
+                    productsHtml += `
+                        <div class="d-flex align-items-center mb-2">
+                            <img src="${imageUrl}" alt="${product.name}" style="width: 50px; height: 50px; object-fit: cover; margin-right: 10px; border-radius: 5px;">
+                            <div>
+                                <h6 class="mb-0">${product.name}</h6>
+                                <p class="text-muted mb-0">Price: ৳${product.price.toFixed(2)}</p>
+                            </div>
+                        </div>
+                    `;
+                });
+                previewProductsList.innerHTML = productsHtml;
+            } else {
+                previewProductsList.innerHTML = '<p>No used products selected for preview.</p>';
+            }
+        }
+
         const previewBookingForm = document.getElementById('previewBookingForm');
         if (previewBookingForm) {
             previewBookingForm.addEventListener('submit', async (event) => {
@@ -519,12 +545,37 @@ document.addEventListener('DOMContentLoaded', async () => {
                     userPhone: document.getElementById('userPhone').value,
                     previewLocation: document.getElementById('previewLocation').value,
                     previewDate: document.getElementById('previewDate').value,
-                    bkashTrxId: document.getElementById('bkashTrxId').value
+                    bkashTrxId: document.getElementById('bkashTrxId').value,
+                    products: usedProducts.map(p => ({ id: p.id, name: p.name }))
                 };
                 console.log('Booking Data:', bookingData);
-                alert('Preview booking confirmed! We will contact you shortly.');
+
+                // Show confirmation modal
+                const bookingConfirmationModal = new bootstrap.Modal(document.getElementById('bookingConfirmationModal'));
+                bookingConfirmationModal.show();
+
+                // Clear cart after successful booking (optional, depending on flow)
+                localStorage.removeItem('cart');
+                updateCartCount();
+
                 // Optionally redirect or clear form
                 previewBookingForm.reset();
+            });
+        }
+
+        // Event listener for Home button in confirmation modal
+        const homeBtn = document.getElementById('homeBtn');
+        if (homeBtn) {
+            homeBtn.addEventListener('click', () => {
+                window.location.href = 'index.html';
+            });
+        }
+
+        // Event listener for Cancel button
+        const cancelBookingBtn = document.getElementById('cancelBookingBtn');
+        if (cancelBookingBtn) {
+            cancelBookingBtn.addEventListener('click', () => {
+                window.history.back(); // Go back to the previous page (cart page)
             });
         }
     }
