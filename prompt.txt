@@ -3,7 +3,7 @@ Project Structure:
 - Locate and open the "payment.html" file.
 
 Task Requirement:
--Great. now check the payment page logic. when I update the cart item this are not showing dynamically on the payment checkout page.
+-Great. if the order is placed successful then show a confirmation pop-up dialog with proper message like: order id, date time, amount, delivery time  dhaka 2 days and out side dhaka 3 days. and user should download this as pdf from a buttom click. set two button "Home" and "Download Invoice"
  
 Constraints:
 - Do not modify or affect any other existing functionality, layout, or design or any other project files if need     modify the other page based on requirement then do it.

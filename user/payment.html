@@ -123,6 +123,198 @@
     </footer>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="app.js?v=1.1"></script>
+    <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const orderSummaryList = document.getElementById('order-summary-list');
+        const subtotalAmountEl = document.getElementById('subtotal-amount');
+        const deliveryChargeAmountEl = document.getElementById('delivery-charge-amount');
+        const totalPayableAmountEl = document.getElementById('total-payable-amount');
+        const deliveryLocationEl = document.getElementById('deliveryLocation');
+        const checkoutForm = document.getElementById('checkoutForm');
+        const bkashDetails = document.getElementById('bkash-details');
+        const paymentMethodRadios = document.querySelectorAll('input[name="paymentMethod"]');
+        const confirmationDetails = document.getElementById('confirmation-details');
+        const downloadInvoiceBtn = document.getElementById('download-invoice-btn');
+
+        const cart = JSON.parse(localStorage.getItem('cart')) || [];
+
+        let subtotal = 0;
+
+        if (cart.length === 0) {
+            orderSummaryList.innerHTML = '<p>Your cart is empty. Please add items to your cart before checking out.</p>';
+            checkoutForm.style.display = 'none'; // Hide form if cart is empty
+        } else {
+            let summaryHtml = '<ul class="list-group list-group-flush">';
+            cart.forEach(item => {
+                subtotal += item.price * item.quantity;
+                summaryHtml += `
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        ${item.name} (x${item.quantity})
+                        <span>৳${(item.price * item.quantity).toFixed(2)}</span>
+                    </li>
+                `;
+            });
+            summaryHtml += '</ul>';
+            orderSummaryList.innerHTML = summaryHtml;
+        }
+
+        subtotalAmountEl.textContent = subtotal.toFixed(2);
+
+        const updateTotals = () => {
+            const deliveryLocation = deliveryLocationEl.value;
+            let deliveryCharge = 0;
+            if (deliveryLocation === 'inside_dhaka') {
+                deliveryCharge = 80;
+            } else if (deliveryLocation === 'outside_dhaka') {
+                deliveryCharge = 150;
+            }
+
+            deliveryChargeAmountEl.textContent = deliveryCharge.toFixed(2);
+            const totalPayable = subtotal + deliveryCharge;
+            totalPayableAmountEl.textContent = totalPayable.toFixed(2);
+        };
+
+        deliveryLocationEl.addEventListener('change', updateTotals);
+
+        paymentMethodRadios.forEach(radio => {
+            radio.addEventListener('change', (event) => {
+                if (event.target.value === 'bkash') {
+                    bkashDetails.style.display = 'block';
+                } else {
+                    bkashDetails.style.display = 'none';
+                }
+            });
+        });
+        
+        checkoutForm.addEventListener('submit', async (event) => {
+            event.preventDefault();
+
+            const customerName = document.getElementById('customerName').value;
+            const customerPhone = document.getElementById('customerPhone').value;
+            const deliveryAddress = document.getElementById('deliveryAddress').value;
+            const deliveryLocation = document.getElementById('deliveryLocation').value;
+            const paymentMethod = document.querySelector('input[name="paymentMethod"]:checked').value;
+            const bkashTrxId = document.getElementById('bkashTrxId').value;
+
+            if (paymentMethod === 'bkash' && !bkashTrxId) {
+                alert('Please enter the bKash Transaction ID.');
+                return;
+            }
+
+            const orderDetails = {
+                customerName,
+                customerPhone,
+                deliveryAddress,
+                deliveryLocation,
+                paymentMethod,
+                bkashTrxId: paymentMethod === 'bkash' ? bkashTrxId : null,
+                items: cart,
+                subtotal: parseFloat(subtotalAmountEl.textContent),
+                deliveryCharge: parseFloat(deliveryChargeAmountEl.textContent),
+                total: parseFloat(totalPayableAmountEl.textContent),
+                status: 'pending'
+            };
+
+            try {
+                const response = await fetch('http://localhost:3000/create-order', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(orderDetails),
+                });
+
+                if (response.ok) {
+                    const result = await response.json();
+                    showConfirmationModal(result.order_id, orderDetails);
+                    localStorage.removeItem('cart'); // Clear cart after successful order
+                } else {
+                    const errorData = await response.json();
+                    showErrorModal(`Failed to place order: ${errorData.message || 'Unknown error'}`);
+                }
+            } catch (error) {
+                console.error('Error placing order:', error);
+                showErrorModal('An error occurred while placing your order. Please try again.');
+            }
+        });
+
+        const showConfirmationModal = (orderId, orderDetails) => {
+            const now = new Date();
+            const deliveryTime = orderDetails.deliveryLocation === 'inside_dhaka' ? '2 days' : '3 days';
+
+            const confirmationHtml = `
+                <p><strong>Order ID:</strong> ${orderId}</p>
+                <p><strong>Date:</strong> ${now.toLocaleDateString()}</p>
+                <p><strong>Time:</strong> ${now.toLocaleTimeString()}</p>
+                <p><strong>Total Amount:</strong> ৳${orderDetails.total.toFixed(2)}</p>
+                <p><strong>Estimated Delivery:</strong> ${deliveryTime}</p>
+            `;
+            confirmationDetails.innerHTML = confirmationHtml;
+
+            const confirmationModal = new bootstrap.Modal(document.getElementById('orderConfirmationModal'));
+            confirmationModal.show();
+
+            downloadInvoiceBtn.onclick = () => {
+                downloadInvoice(orderId, orderDetails, now);
+            };
+        };
+
+        const showErrorModal = (message) => {
+            confirmationDetails.innerHTML = `<p class="text-danger">${message}</p>`;
+            const confirmationModal = new bootstrap.Modal(document.getElementById('orderConfirmationModal'));
+            confirmationModal.show();
+        };
+
+        const downloadInvoice = (orderId, orderDetails, now) => {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+
+            doc.text('SeeFirst Invoice', 20, 20);
+            doc.text(`Order ID: ${orderId}`, 20, 30);
+            doc.text(`Date: ${now.toLocaleDateString()}`, 20, 40);
+            doc.text(`Time: ${now.toLocaleTimeString()}`, 20, 50);
+            doc.text('------------------------------', 20, 60);
+            doc.text('Items:', 20, 70);
+            let y = 80;
+            orderDetails.items.forEach(item => {
+                doc.text(`${item.name} (x${item.quantity}) - ৳${(item.price * item.quantity).toFixed(2)}`, 20, y);
+                y += 10;
+            });
+            doc.text('------------------------------', 20, y);
+            y += 10;
+            doc.text(`Subtotal: ৳${orderDetails.subtotal.toFixed(2)}`, 20, y);
+            y += 10;
+            doc.text(`Delivery Charge: ৳${orderDetails.deliveryCharge.toFixed(2)}`, 20, y);
+            y += 10;
+            doc.text(`Total: ৳${orderDetails.total.toFixed(2)}`, 20, y);
+
+            doc.save(`invoice-${orderId}.pdf`);
+        };
+
+        // Initial call to set totals
+        updateTotals();
+    });
+</script>
+
+    <!-- Order Confirmation Modal -->
+    <div class="modal fade" id="orderConfirmationModal" tabindex="-1" aria-labelledby="orderConfirmationModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="orderConfirmationModalLabel">Order Confirmation</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" id="confirmation-details">
+                    <!-- Order details will be populated here -->
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="window.location.href='index.html'">Home</button>
+                    <button type="button" class="btn btn-primary" id="download-invoice-btn">Download Invoice</button>
+                </div>
+            </div>
+        </div>
+    </div>
 </body>
 </html>

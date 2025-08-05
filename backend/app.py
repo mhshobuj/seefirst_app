@@ -107,6 +107,33 @@ def init_db():
                 password TEXT NOT NULL
             )
         ''')
+        db.execute('''
+            CREATE TABLE IF NOT EXISTS new_orders (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                customer_name TEXT NOT NULL,
+                customer_phone TEXT NOT NULL,
+                delivery_address TEXT NOT NULL,
+                delivery_location TEXT NOT NULL,
+                payment_method TEXT NOT NULL,
+                bkash_trx_id TEXT,
+                subtotal REAL NOT NULL,
+                delivery_charge REAL NOT NULL,
+                total REAL NOT NULL,
+                status TEXT DEFAULT 'pending',
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        ''')
+        db.execute('''
+            CREATE TABLE IF NOT EXISTS order_items (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                order_id INTEGER NOT NULL,
+                product_id INTEGER NOT NULL,
+                quantity INTEGER NOT NULL,
+                price REAL NOT NULL,
+                FOREIGN KEY (order_id) REFERENCES new_orders(id),
+                FOREIGN KEY (product_id) REFERENCES products(id)
+            )
+        ''')
         db.commit()
         db.close()
 
@@ -477,6 +504,52 @@ def delete_banner(banner_id):
     conn.commit()
     conn.close()
     return jsonify({"message": "deleted", "changes": 1})
+
+@app.route('/create-order', methods=['POST'])
+def create_order():
+    data = request.get_json()
+
+    # Extract data from the request
+    customer_name = data.get('customerName')
+    customer_phone = data.get('customerPhone')
+    delivery_address = data.get('deliveryAddress')
+    delivery_location = data.get('deliveryLocation')
+    payment_method = data.get('paymentMethod')
+    bkash_trx_id = data.get('bkashTrxId')
+    items = data.get('items', [])
+    subtotal = data.get('subtotal')
+    delivery_charge = data.get('deliveryCharge')
+    total = data.get('total')
+
+    if not all([customer_name, customer_phone, delivery_address, delivery_location, payment_method, items]):
+        return jsonify({'message': 'Missing required fields'}), 400
+
+    conn = get_db_connection()
+    try:
+        cursor = conn.cursor()
+
+        # Insert into new_orders table
+        cursor.execute('''
+            INSERT INTO new_orders (customer_name, customer_phone, delivery_address, delivery_location, payment_method, bkash_trx_id, subtotal, delivery_charge, total)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ''', (customer_name, customer_phone, delivery_address, delivery_location, payment_method, bkash_trx_id, subtotal, delivery_charge, total))
+        
+        order_id = cursor.lastrowid
+
+        # Insert into order_items table
+        for item in items:
+            cursor.execute('''
+                INSERT INTO order_items (order_id, product_id, quantity, price)
+                VALUES (?, ?, ?, ?)
+            ''', (order_id, item['id'], item['quantity'], item['price']))
+
+        conn.commit()
+        return jsonify({'message': 'Order created successfully', 'order_id': order_id}), 201
+    except Exception as e:
+        conn.rollback()
+        return jsonify({'message': 'Failed to create order', 'error': str(e)}), 500
+    finally:
+        conn.close()
 
 if __name__ == '__main__':
     app.run(debug=True, port=3000)
