@@ -79,11 +79,13 @@ document.addEventListener('DOMContentLoaded', () => {
         data.data.forEach(product => {
             const row = productsTableBody.insertRow();
             row.insertCell().textContent = product.id;
+            row.insertCell().textContent = product.product_code;
             row.insertCell().textContent = product.name;
             row.insertCell().textContent = product.description;
             row.insertCell().textContent = product.price;
             row.insertCell().textContent = product.image ? product.image.split(',')[0] : ''; // Display first image if multiple
             row.insertCell().textContent = product.category;
+            row.insertCell().textContent = product.quantity;
             const actionsCell = row.insertCell();
             const editButton = document.createElement('button');
             editButton.textContent = 'Edit';
@@ -212,6 +214,7 @@ document.addEventListener('DOMContentLoaded', () => {
         formData.append('offer_price', parseFloat(document.getElementById('productOfferPrice').value) || 0.0);
         formData.append('category', document.getElementById('productCategory').value);
         formData.append('condition', document.getElementById('productCondition').value);
+        formData.append('quantity', parseInt(document.getElementById('productQuantity').value));
 
         const colors = [];
         document.querySelectorAll('input[name="color"]:checked').forEach(checkbox => {
@@ -378,25 +381,33 @@ document.addEventListener('DOMContentLoaded', () => {
             row.insertCell().textContent = order.products;
             row.insertCell().textContent = order.total;
             const statusCell = row.insertCell();
-            statusCell.textContent = order.status;
+            const statusSelect = document.createElement('select');
+            statusSelect.innerHTML = `
+                <option value="New" ${order.status === 'New' ? 'selected' : ''}>New</option>
+                <option value="Processing" ${order.status === 'Processing' ? 'selected' : ''}>Processing</option>
+                <option value="Confirmed" ${order.status === 'Confirmed' ? 'selected' : ''}>Confirmed</option>
+                <option value="Packaging" ${order.status === 'Packaging' ? 'selected' : ''}>Packaging</option>
+                <option value="Delivering" ${order.status === 'Delivering' ? 'selected' : ''}>Delivering</option>
+                <option value="Delivered" ${order.status === 'Delivered' ? 'selected' : ''}>Delivered</option>
+            `;
+            statusCell.appendChild(statusSelect);
             const actionsCell = row.insertCell();
-            if (order.status === 'pending') {
-                const completeButton = document.createElement('button');
-                completeButton.textContent = 'Mark as Complete';
-                completeButton.onclick = () => updateOrderStatus(order.id, 'completed');
-                actionsCell.appendChild(completeButton);
-            }
+            const updateButton = document.createElement('button');
+            updateButton.textContent = 'Update';
+            updateButton.onclick = () => updateOrderStatus(order.id, statusSelect.value);
+            actionsCell.appendChild(updateButton);
         });
     }
 
     async function updateOrderStatus(id, status) {
-        await fetch(`http://localhost:3000/api/orders/${id}`, {
-            method: 'PUT',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ status })
-        });
+        await fetch(`http://localhost:3000/api/orders/${id}`,
+            {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ status })
+            });
         loadOrders();
     }
 

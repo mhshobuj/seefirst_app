@@ -1,9 +1,11 @@
 Project Structure:
-- Navigate to the "user" directory.
-- Locate and open the "payment.html" file.
+- Navigate to the "admin" directory.
+- Locate and open the "Orders.html" file.
 
 Task Requirement:
--Great. when user create a order from the user portal this order needs to show on admin portal's "Orders" section. so that admin can process the order further.
+-Great. need more work on this orders section like order should have multiple status: New, Processing, Confirmed, Packaging, Delivering, Delivered. so that admin can manage all the product. the have must be a product code.
+-product code would be auto generate when admin add product by admin dashboard. add more things a product quantity on product add on time.
+
  
 Constraints:
 - Do not modify or affect any other existing functionality, layout, or design or any other project files if need     modify the other page based on requirement then do it.

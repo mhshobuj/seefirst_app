@@ -48,7 +48,9 @@ def init_db():
                 image TEXT,
                 category TEXT,
                 colors TEXT,
-                condition TEXT
+                condition TEXT,
+                product_code TEXT,
+                quantity INTEGER
             )
         ''')
         # Add new columns if they don't exist
@@ -64,6 +66,16 @@ def init_db():
                 raise
         try:
             db.execute("ALTER TABLE products ADD COLUMN condition TEXT");
+        except sqlite3.OperationalError as e:
+            if "duplicate column name" not in str(e):
+                raise
+        try:
+            db.execute("ALTER TABLE products ADD COLUMN product_code TEXT");
+        except sqlite3.OperationalError as e:
+            if "duplicate column name" not in str(e):
+                raise
+        try:
+            db.execute("ALTER TABLE products ADD COLUMN quantity INTEGER");
         except sqlite3.OperationalError as e:
             if "duplicate column name" not in str(e):
                 raise
@@ -209,6 +221,8 @@ def add_product():
     category = request.form.get('category')
     colors = request.form.get('colors')
     condition = request.form.get('condition')
+    quantity = int(request.form.get('quantity', 0))
+    product_code = str(uuid.uuid4())
 
     image_filenames = []
     if 'images' in request.files:
@@ -226,11 +240,11 @@ def add_product():
     image_paths = ', '.join(image_filenames) # Store as comma-separated string
 
     conn = get_db_connection()
-    cursor = conn.execute('INSERT INTO products (name, description, price, offer_price, image, category, colors, condition) VALUES (?, ?, ?, ?, ?, ?, ?, ?)', (name, description, price, offer_price, image_paths, category, colors, condition))
+    cursor = conn.execute('INSERT INTO products (name, description, price, offer_price, image, category, colors, condition, product_code, quantity) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', (name, description, price, offer_price, image_paths, category, colors, condition, product_code, quantity))
     conn.commit()
     product_id = cursor.lastrowid
     conn.close()
-    return jsonify({"message": "success", "data": {'id': product_id, 'name': name, 'description': description, 'price': price, 'offer_price': offer_price, 'image': image_paths, 'category': category, 'colors': colors, 'condition': condition}}), 201
+    return jsonify({"message": "success", "data": {'id': product_id, 'name': name, 'description': description, 'price': price, 'offer_price': offer_price, 'image': image_paths, 'category': category, 'colors': colors, 'condition': condition, 'product_code': product_code, 'quantity': quantity}}), 201
 
 @app.route('/api/products/<int:product_id>', methods=['GET'])
 def get_product(product_id):
@@ -395,7 +409,7 @@ def update_order_status(order_id):
     status = updated_order['status']
 
     conn = get_db_connection()
-    conn.execute('UPDATE orders SET status = ? WHERE id = ?', (status, order_id))
+    conn.execute('UPDATE new_orders SET status = ? WHERE id = ?', (status, order_id))
     conn.commit()
     conn.close()
     return jsonify({"message": "success", "changes": 1})
