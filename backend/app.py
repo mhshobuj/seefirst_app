@@ -370,7 +370,7 @@ def delete_category(category_id):
 @app.route('/api/orders', methods=['GET'])
 def get_orders():
     conn = get_db_connection()
-    orders = conn.execute('SELECT * FROM orders').fetchall()
+    orders = conn.execute('SELECT o.*, GROUP_CONCAT(p.name || " (x" || i.quantity || ")", "; ") as products FROM new_orders o JOIN order_items i ON o.id = i.order_id JOIN products p ON i.product_id = p.id GROUP BY o.id').fetchall()
     conn.close()
     return jsonify({"message": "success", "data": [dict(row) for row in orders]})
 
