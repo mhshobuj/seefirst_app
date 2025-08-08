@@ -61,6 +61,8 @@ document.addEventListener('DOMContentLoaded', () => {
         loadOrders();
     } else if (path.includes('customers.html')) {
         loadCustomers();
+    } else if (path.includes('previews.html')) {
+        loadPreviews();
     } else if (path.includes('banners.html')) {
         loadBanners();
         document.getElementById('bannerUploadForm').addEventListener('submit', addBanner);
@@ -450,6 +452,46 @@ document.addEventListener('DOMContentLoaded', () => {
             method: 'DELETE'
         });
         loadCustomers();
+    }
+
+    async function loadPreviews() {
+        const response = await fetch('http://localhost:3000/api/previews');
+        const data = await response.json();
+        const previewsTableBody = document.querySelector('#previewsTable tbody');
+        previewsTableBody.innerHTML = '';
+        data.data.forEach(preview => {
+            const row = previewsTableBody.insertRow();
+            row.insertCell().textContent = preview.user_name;
+            row.insertCell().textContent = preview.user_phone;
+            row.insertCell().textContent = preview.preview_address;
+            row.insertCell().textContent = preview.schedule_date;
+            row.insertCell().textContent = preview.products;
+            const statusCell = row.insertCell();
+            const statusSelect = document.createElement('select');
+            statusSelect.innerHTML = `
+                <option value="Pending" ${preview.status === 'Pending' ? 'selected' : ''}>Pending</option>
+                <option value="Confirmed" ${preview.status === 'Confirmed' ? 'selected' : ''}>Confirmed</option>
+                <option value="Completed" ${preview.status === 'Completed' ? 'selected' : ''}>Completed</option>
+                <option value="Cancelled" ${preview.status === 'Cancelled' ? 'selected' : ''}>Cancelled</option>
+            `;
+            statusCell.appendChild(statusSelect);
+            const actionsCell = row.insertCell();
+            const updateButton = document.createElement('button');
+            updateButton.textContent = 'Update';
+            updateButton.onclick = () => updatePreviewStatus(preview.id, statusSelect.value);
+            actionsCell.appendChild(updateButton);
+        });
+    }
+
+    async function updatePreviewStatus(previewId, newStatus) {
+        await fetch(`http://localhost:3000/api/previews/${previewId}/status`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ status: newStatus })
+        });
+        loadPreviews();
     }
 
     async function loadDashboardSummary() {

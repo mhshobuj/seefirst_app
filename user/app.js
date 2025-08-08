@@ -673,6 +673,66 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
 
+    // Function to load the book preview page
+    function loadPreviewPage() {
+        const isLoggedIn = localStorage.getItem('isLoggedIn');
+        const userData = JSON.parse(localStorage.getItem('userData'));
+
+        if (isLoggedIn !== 'true' || !userData) {
+            window.location.href = 'login.html';
+            return;
+        }
+
+        document.getElementById('userName').value = userData.name || '';
+        document.getElementById('userPhone').value = userData.phone || '';
+
+        const cart = JSON.parse(localStorage.getItem('cart')) || [];
+        const usedProducts = cart.filter(item => item.condition === 'Used');
+        const previewProductsList = document.getElementById('preview-products-list');
+
+        if (previewProductsList) {
+            if (usedProducts.length > 0) {
+                let productsHtml = '';
+                usedProducts.forEach(product => {
+                    productsHtml += `<p>${product.name} - ৳${product.price.toFixed(2)}</p>`;
+                });
+                previewProductsList.innerHTML = productsHtml;
+            } else {
+                previewProductsList.innerHTML = '<p>No used products in your cart.</p>';
+            }
+        }
+
+        const bookPreviewForm = document.getElementById('book-preview-form');
+        if (bookPreviewForm) {
+            bookPreviewForm.addEventListener('submit', async (event) => {
+                event.preventDefault();
+                const previewRequest = {
+                    userName: document.getElementById('userName').value,
+                    userPhone: document.getElementById('userPhone').value,
+                    previewAddress: document.getElementById('previewAddress').value,
+                    scheduleDate: document.getElementById('scheduleDate').value,
+                    products: usedProducts
+                };
+
+                const response = await fetch('http://localhost:3000/api/previews', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(previewRequest)
+                });
+
+                if (response.ok) {
+                    alert('Preview request submitted successfully!');
+                    localStorage.setItem('cart', JSON.stringify(cart.filter(item => item.condition !== 'Used')));
+                    window.location.href = 'index.html';
+                } else {
+                    alert('Failed to submit preview request.');
+                }
+            });
+        }
+    }
+
     // Function to render cart items
     function renderCartItems() {
         const cartContainer = document.getElementById('cart-items-container');
@@ -746,5 +806,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     } else if (path.includes('my-orders.html')) {
         loadUserOrders();
+    } else if (path.includes('book-preview.html')) {
+        loadPreviewPage();
     }
 });

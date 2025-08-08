@@ -152,6 +152,18 @@ def init_db():
                 FOREIGN KEY (product_id) REFERENCES products(id)
             )
         ''')
+        db.execute('''
+            CREATE TABLE IF NOT EXISTS previews (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                user_name TEXT NOT NULL,
+                user_phone TEXT NOT NULL,
+                preview_address TEXT NOT NULL,
+                schedule_date TEXT NOT NULL,
+                products TEXT NOT NULL,
+                status TEXT DEFAULT 'Pending',
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        ''')
         db.commit()
         db.close()
 
@@ -387,6 +399,7 @@ def delete_category(category_id):
     conn.commit()
     conn.close()
     return jsonify({"message": "deleted", "changes": 1})
+
 @app.route('/api/orders', methods=['GET'])
 def get_orders():
     user_phone = request.args.get('user_phone')
@@ -601,6 +614,44 @@ def delete_user(user_id):
     conn.commit()
     conn.close()
     return jsonify({"message": "deleted", "changes": 1})
+
+# Previews
+@app.route('/api/previews', methods=['GET'])
+def get_previews():
+    conn = get_db_connection()
+    previews = conn.execute('SELECT * FROM previews').fetchall()
+    conn.close()
+    return jsonify({"message": "success", "data": [dict(row) for row in previews]})
+
+@app.route('/api/previews', methods=['POST'])
+def add_preview():
+    data = request.json
+    user_name = data.get('userName')
+    user_phone = data.get('userPhone')
+    preview_address = data.get('previewAddress')
+    schedule_date = data.get('scheduleDate')
+    products = data.get('products')
+
+    products_str = ""
+    if products:
+        products_str = ", ".join([p['name'] for p in products])
+
+    conn = get_db_connection()
+    conn.execute('INSERT INTO previews (user_name, user_phone, preview_address, schedule_date, products) VALUES (?, ?, ?, ?, ?)', (user_name, user_phone, preview_address, schedule_date, products_str))
+    conn.commit()
+    conn.close()
+    return jsonify({"message": "success"}), 201
+
+@app.route('/api/previews/<int:preview_id>/status', methods=['PUT'])
+def update_preview_status(preview_id):
+    data = request.json
+    status = data.get('status')
+
+    conn = get_db_connection()
+    conn.execute('UPDATE previews SET status = ? WHERE id = ?', (status, preview_id))
+    conn.commit()
+    conn.close()
+    return jsonify({"message": "success", "changes": 1})
 
 if __name__ == '__main__':
     app.run(debug=True, port=3000)

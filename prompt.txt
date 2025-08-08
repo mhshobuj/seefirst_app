@@ -3,7 +3,9 @@ Project Structure:
 - Locate and open the "cart.html" file.
 
 Task Requirement:
--Good job, just removed extra horizontal space between each other element, others stay as it is
+-There is a "Request for preview" button, this is show when user shop the "Used" product. need to create a "book preview" page redirect this page after click that button
+-book preview page have reviewed requested product list, name, phone, schedule date, preview address, also show the preview amount details product price, need to show like message "fee are refund if you buy this product"
+-on the admin portal need to add new section "preview", on this preview section show all preview request list from user.
  
 Constraints:
 - Do not modify or affect any other existing functionality, layout, or design or any other project files if need     modify the other page based on requirement then do it.

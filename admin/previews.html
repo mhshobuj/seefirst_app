@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Dashboard</title>
+    <title>Manage Previews</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -22,21 +22,26 @@
     </div>
     <div class="main-content">
         <header>
-            <h1>Dashboard</h1>
+            <h1>Manage Preview Requests</h1>
         </header>
-        <section class="dashboard-summary">
-            <div class="summary-card">
-                <h3>Total Products</h3>
-                <p id="total-products">0</p>
-            </div>
-            <div class="summary-card">
-                <h3>Total Orders</h3>
-                <p id="total-orders">0</p>
-            </div>
-            <div class="summary-card">
-                <h3>Total Customers</h3>
-                <p id="total-customers">0</p>
-            </div>
+        <section class="preview-management">
+            <h2>All Preview Requests</h2>
+            <table id="previewsTable">
+                <thead>
+                    <tr>
+                        <th>Customer Name</th>
+                        <th>Customer Phone</th>
+                        <th>Address</th>
+                        <th>Scheduled Date</th>
+                        <th>Products</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Preview rows will be inserted here by JavaScript -->
+                </tbody>
+            </table>
         </section>
     </div>
     <script src="app.js"></script>
