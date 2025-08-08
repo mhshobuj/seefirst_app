@@ -613,7 +613,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (isLoggedIn === 'true' && userData) {
             userMenu.innerHTML = `
                 <li><a class="dropdown-item" href="#">Hi, ${userData.name}</a></li>
-                <li><a class="dropdown-item" href="#">My Orders</a></li>
+                <li><a class="dropdown-item" href="my-orders.html">My Orders</a></li>
                 <li><a class="dropdown-item" href="#">My Account</a></li>
                 <li><hr class="dropdown-divider"></li>
                 <li><a class="dropdown-item" href="#" id="logout-btn">Logout</a></li>
@@ -632,6 +632,45 @@ document.addEventListener('DOMContentLoaded', async () => {
         localStorage.removeItem('userData');
         updateUserMenu(); // Refresh the menu
         window.location.href = 'index.html'; // Redirect to home page
+    }
+
+    // Function to load user orders
+    async function loadUserOrders() {
+        const ordersContainer = document.getElementById('orders-container');
+        if (!ordersContainer) return;
+
+        const isLoggedIn = localStorage.getItem('isLoggedIn');
+        const userData = JSON.parse(localStorage.getItem('userData'));
+
+        if (isLoggedIn !== 'true' || !userData) {
+            ordersContainer.innerHTML = '<p>Please <a href="login.html">login</a> to view your orders.</p>';
+            return;
+        }
+
+        const response = await fetch(`http://localhost:3000/api/orders?user_phone=${userData.phone}`);
+        const data = await response.json();
+
+        if (data.data.length === 0) {
+            ordersContainer.innerHTML = '<p>You have no orders yet.</p>';
+        } else {
+            let ordersHtml = '';
+            data.data.forEach(order => {
+                ordersHtml += `
+                    <div class="card mb-3 shadow-sm">
+                        <div class="card-header d-flex justify-content-between">
+                            <span>Order ID: ${order.id}</span>
+                            <span>Date: ${new Date(order.created_at).toLocaleDateString()}</span>
+                        </div>
+                        <div class="card-body">
+                            <p><strong>Status:</strong> ${order.status}</p>
+                            <p><strong>Total:</strong> ৳${order.total.toFixed(2)}</p>
+                            <p><strong>Products:</strong> ${order.products}</p>
+                        </div>
+                    </div>
+                `;
+            });
+            ordersContainer.innerHTML = ordersHtml;
+        }
     }
 
     // Function to render cart items
@@ -705,5 +744,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 loginModal.show();
             }
         });
+    } else if (path.includes('my-orders.html')) {
+        loadUserOrders();
     }
 });
