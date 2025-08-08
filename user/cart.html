@@ -104,19 +104,18 @@
                     const imageUrl = product.image ? `http://localhost:3000/uploads/${product.image.split(',')[0].trim()}` : 'https://placehold.co/200x150';
                     total += product.price * product.quantity;
                     cartHtml += `
-                        <div class="card mb-3 shadow-sm">
+                        <div class="card mb-2 shadow-sm">
                             <div class="row g-0">
-                                <div class="col-md-3">
-                                    <img src="${imageUrl}" class="img-fluid rounded-start" alt="${product.name}">
+                                <div class="col-md-3 d-flex align-items-center justify-content-center">
+                                    <img src="${imageUrl}" class="img-fluid rounded-start" alt="${product.name}" style="max-height: 150px; max-width: 150px; object-fit: contain;">
                                 </div>
                                 <div class="col-md-9">
-                                    <div class="card-body">
-                                        <h5 class="card-title">${product.name}</h5>
-                                        <p class="card-text text-muted">${product.description}</p>
-                                        <p class="card-text fw-bold">৳${product.price.toFixed(2)}</p>
+                                    <div class="card-body p-2">
+                                        <h5 class="card-title mb-1">${product.name}</h5>
+                                        <p class="card-text fw-bold mb-2">৳${product.price.toFixed(2)}</p>
                                         <div class="d-flex align-items-center">
                                             <button class="btn btn-outline-primary btn-sm" type="button" onclick="updateQuantity(${product.id}, -1)">-</button>
-                                            <input type="text" class="form-control form-control-sm text-center mx-2" value="${product.quantity}" style="width: 50px;" readonly>
+                                            <input type="text" class="form-control form-control-sm text-center mx-1" value="${product.quantity}" style="width: 40px;" readonly>
                                             <button class="btn btn-outline-primary btn-sm" type="button" onclick="updateQuantity(${product.id}, 1)">+</button>
                                             <button class="btn btn-danger btn-sm ms-auto" type="button" onclick="removeFromCart(${product.id})"><i class="bi bi-trash"></i> Remove</button>
                                         </div>

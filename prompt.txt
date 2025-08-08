@@ -1,9 +1,9 @@
 Project Structure:
 - Navigate to the "user" directory.
-- Locate and open the "index.html" file.
+- Locate and open the "cart.html" file.
 
 Task Requirement:
--Great now create a my orders page, when user click on "My Orders" then navigate to my order page and show all the orders. make sure show all order details from admin portal by api and must show the order status.
+-Good job, just removed extra horizontal space between each other element, others stay as it is
  
 Constraints:
 - Do not modify or affect any other existing functionality, layout, or design or any other project files if need     modify the other page based on requirement then do it.
