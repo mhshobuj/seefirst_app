@@ -116,9 +116,15 @@ def init_db():
                 name TEXT NOT NULL,
                 phone TEXT NOT NULL UNIQUE,
                 email TEXT UNIQUE,
-                password TEXT NOT NULL
+                password TEXT NOT NULL,
+                is_active BOOLEAN DEFAULT 1
             )
         ''')
+        try:
+            db.execute("ALTER TABLE users ADD COLUMN is_active BOOLEAN DEFAULT 1");
+        except sqlite3.OperationalError as e:
+            if "duplicate column name" not in str(e):
+                raise
         db.execute('''
             CREATE TABLE IF NOT EXISTS new_orders (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -564,6 +570,33 @@ def create_order():
         return jsonify({'message': 'Failed to create order', 'error': str(e)}), 500
     finally:
         conn.close()
+
+# User Management
+@app.route('/api/users', methods=['GET'])
+def get_users():
+    conn = get_db_connection()
+    users = conn.execute('SELECT u.id, u.name, u.phone, u.is_active, COUNT(o.id) as order_count FROM users u LEFT JOIN new_orders o ON u.phone = o.customer_phone GROUP BY u.id').fetchall()
+    conn.close()
+    return jsonify({"message": "success", "data": [dict(row) for row in users]})
+
+@app.route('/api/users/<int:user_id>/status', methods=['PUT'])
+def update_user_status(user_id):
+    data = request.json
+    is_active = data.get('is_active')
+
+    conn = get_db_connection()
+    conn.execute('UPDATE users SET is_active = ? WHERE id = ?', (is_active, user_id))
+    conn.commit()
+    conn.close()
+    return jsonify({"message": "success", "changes": 1})
+
+@app.route('/api/users/<int:user_id>', methods=['DELETE'])
+def delete_user(user_id):
+    conn = get_db_connection()
+    conn.execute('DELETE FROM users WHERE id = ?', (user_id,))
+    conn.commit()
+    conn.close()
+    return jsonify({"message": "deleted", "changes": 1})
 
 if __name__ == '__main__':
     app.run(debug=True, port=3000)

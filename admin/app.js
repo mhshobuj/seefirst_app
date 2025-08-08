@@ -412,31 +412,44 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     async function loadCustomers() {
-        // This is a simplified example. In a real app, you'd fetch customer data.
-        // For now, we'll aggregate from orders.
-        const response = await fetch('http://localhost:3000/api/orders');
+        const response = await fetch('http://localhost:3000/api/users');
         const data = await response.json();
-        const customers = {};
-        data.data.forEach(order => {
-            if (customers[order.customer_phone]) {
-                customers[order.customer_phone].orderCount++;
-            } else {
-                customers[order.customer_phone] = {
-                    name: order.customer_name,
-                    orderCount: 1
-                };
-            }
-        });
-
         const customersTableBody = document.querySelector('#customersTable tbody');
         customersTableBody.innerHTML = '';
-        for (const phone in customers) {
-            const customer = customers[phone];
+        data.data.forEach(user => {
             const row = customersTableBody.insertRow();
-            row.insertCell().textContent = customer.name;
-            row.insertCell().textContent = phone;
-            row.insertCell().textContent = customer.orderCount;
-        }
+            row.insertCell().textContent = user.name;
+            row.insertCell().textContent = user.phone;
+            row.insertCell().textContent = user.order_count || 0;
+            const actionsCell = row.insertCell();
+            const statusButton = document.createElement('button');
+            statusButton.textContent = user.is_active ? 'Deactivate' : 'Activate';
+            statusButton.onclick = () => toggleUserStatus(user.id, !user.is_active);
+            actionsCell.appendChild(statusButton);
+            const deleteButton = document.createElement('button');
+            deleteButton.textContent = 'Delete';
+            deleteButton.onclick = () => deleteUser(user.id);
+            actionsCell.appendChild(deleteButton);
+        });
+    }
+
+    async function toggleUserStatus(userId, newStatus) {
+        await fetch(`http://localhost:3000/api/users/${userId}/status`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ is_active: newStatus })
+        });
+        loadCustomers();
+    }
+
+    async function deleteUser(userId) {
+        if (!confirm('Are you sure you want to delete this user?')) return;
+        await fetch(`http://localhost:3000/api/users/${userId}`, {
+            method: 'DELETE'
+        });
+        loadCustomers();
     }
 
     async function loadDashboardSummary() {

@@ -294,6 +294,19 @@
 
         // Initial call to set totals
         updateTotals();
+
+        // Autofill user data if logged in
+        const isLoggedIn = localStorage.getItem('isLoggedIn');
+        console.log('isLoggedIn value from payment.html:', isLoggedIn);
+        if (isLoggedIn !== 'true') {
+            window.location.href = 'login.html';
+        } else {
+            const userData = JSON.parse(localStorage.getItem('userData'));
+            if (userData) {
+                document.getElementById('customerName').value = userData.name || '';
+                document.getElementById('customerPhone').value = userData.phone || '';
+            }
+        }
     });
 </script>
 

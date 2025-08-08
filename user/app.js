@@ -598,4 +598,77 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // Initial cart count update
     updateCartCount();
+
+    // Function to render cart items
+    function renderCartItems() {
+        const cartContainer = document.getElementById('cart-items-container');
+        if (!cartContainer) return;
+
+        const cart = JSON.parse(localStorage.getItem('cart')) || [];
+        let total = 0;
+        let cartHtml = '';
+
+        if (cart.length === 0) {
+            cartContainer.innerHTML = '<p>Your cart is empty.</p>';
+        } else {
+            cart.forEach(product => {
+                const imageUrl = product.image ? `http://localhost:3000/uploads/${product.image.split(',')[0].trim()}` : 'https://placehold.co/200x150';
+                total += product.price * product.quantity;
+                cartHtml += `
+                    <div class="card mb-3 shadow-sm">
+                        <div class="row g-0">
+                            <div class="col-md-3">
+                                <img src="${imageUrl}" class="img-fluid rounded-start" alt="${product.name}">
+                            </div>
+                            <div class="col-md-9">
+                                <div class="card-body">
+                                    <h5 class="card-title">${product.name}</h5>
+                                    <p class="card-text text-muted">${product.description}</p>
+                                    <p class="card-text fw-bold">৳${product.price.toFixed(2)}</p>
+                                    <div class="d-flex align-items-center">
+                                        <button class="btn btn-outline-primary btn-sm" type="button" onclick="updateQuantity(${product.id}, -1)">-</button>
+                                        <input type="text" class="form-control form-control-sm text-center mx-2" value="${product.quantity}" style="width: 50px;" readonly>
+                                        <button class="btn btn-outline-primary btn-sm" type="button" onclick="updateQuantity(${product.id}, 1)">+</button>
+                                        <button class="btn btn-danger btn-sm ms-auto" type="button" onclick="removeFromCart(${product.id})"><i class="bi bi-trash"></i> Remove</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            cartContainer.innerHTML = cartHtml;
+        }
+
+        document.getElementById('cart-total-amount').textContent = total.toFixed(2);
+
+        const hasUsedProduct = cart.some(item => item.condition === 'Used');
+        const requestPreviewBtn = document.getElementById('request-preview-btn');
+        if (requestPreviewBtn) {
+            if (hasUsedProduct) {
+                requestPreviewBtn.style.display = 'inline-block';
+                requestPreviewBtn.addEventListener('click', () => {
+                    const previewModal = new bootstrap.Modal(document.getElementById('previewConfirmationModal'));
+                    previewModal.show();
+                });
+            } else {
+                requestPreviewBtn.style.display = 'none';
+            }
+        }
+    }
+
+    if (path.includes('cart.html')) {
+        renderCartItems();
+
+        document.getElementById('proceed-to-checkout-btn').addEventListener('click', (event) => {
+            event.preventDefault();
+            const isLoggedIn = localStorage.getItem('isLoggedIn');
+            if (isLoggedIn === 'true') {
+                window.location.href = 'payment.html';
+            } else {
+                const loginModal = new bootstrap.Modal(document.getElementById('loginRegisterModal'));
+                loginModal.show();
+            }
+        });
+    }
 });
