@@ -165,6 +165,51 @@ def init_db():
             )
         ''')
         db.commit()
+
+        # Dummy data for delivered orders (for chart visualization)
+        # Ensure these dates are within a reasonable range for testing
+        dummy_orders = [
+            ('John Doe', '1234567890', '123 Main St', 'inside_dhaka', 'cod', None, 100.0, 80.0, 180.0, 'Delivered', '2024-01-15 10:00:00'),
+            ('Jane Smith', '0987654321', '456 Oak Ave', 'outside_dhaka', 'bkash', 'TRX123', 250.0, 150.0, 400.0, 'Delivered', '2024-01-20 11:30:00'),
+            ('John Doe', '1234567890', '123 Main St', 'inside_dhaka', 'cod', None, 50.0, 80.0, 130.0, 'Delivered', '2024-02-01 14:00:00'),
+            ('Peter Jones', '1122334455', '789 Pine Rd', 'inside_dhaka', 'cod', None, 300.0, 80.0, 380.0, 'Delivered', '2024-02-25 09:00:00'),
+            ('Jane Smith', '0987654321', '456 Oak Ave', 'outside_dhaka', 'cod', None, 120.0, 150.0, 270.0, 'Delivered', '2024-03-10 16:00:00'),
+            ('Alice Brown', '5566778899', '101 Elm St', 'inside_dhaka', 'bkash', 'TRX456', 80.0, 80.0, 160.0, 'Delivered', '2024-03-05 13:00:00'),
+            ('John Doe', '1234567890', '123 Main St', 'inside_dhaka', 'cod', None, 150.0, 80.0, 230.0, 'Delivered', '2024-04-01 10:00:00'),
+            ('Jane Smith', '0987654321', '456 Oak Ave', 'outside_dhaka', 'cod', None, 200.0, 150.0, 350.0, 'Delivered', '2024-04-15 11:30:00'),
+            ('Peter Jones', '1122334455', '789 Pine Rd', 'inside_dhaka', 'cod', None, 100.0, 80.0, 180.0, 'Delivered', '2024-05-01 14:00:00'),
+            ('Alice Brown', '5566778899', '101 Elm St', 'inside_dhaka', 'bkash', 'TRX789', 220.0, 80.0, 300.0, 'Delivered', '2024-05-20 09:00:00'),
+            ('John Doe', '1234567890', '123 Main St', 'inside_dhaka', 'cod', None, 90.0, 80.0, 170.0, 'Delivered', '2024-06-01 16:00:00'),
+            ('Jane Smith', '0987654321', '456 Oak Ave', 'outside_dhaka', 'cod', None, 180.0, 150.0, 330.0, 'Delivered', '2024-06-10 13:00:00'),
+            ('Peter Jones', '1122334455', '789 Pine Rd', 'inside_dhaka', 'cod', None, 250.0, 80.0, 330.0, 'Delivered', '2024-07-01 10:00:00'),
+            ('Alice Brown', '5566778899', '101 Elm St', 'inside_dhaka', 'bkash', 'TRX101', 130.0, 80.0, 210.0, 'Delivered', '2024-07-15 11:30:00'),
+            ('John Doe', '1234567890', '123 Main St', 'inside_dhaka', 'cod', None, 110.0, 80.0, 190.0, 'Delivered', '2024-08-01 14:00:00'),
+            ('Jane Smith', '0987654321', '456 Oak Ave', 'outside_dhaka', 'cod', None, 280.0, 150.0, 430.0, 'Delivered', '2024-08-05 09:00:00'),
+        ]
+        for order in dummy_orders:
+            try:
+                db.execute('INSERT INTO new_orders (customer_name, customer_phone, delivery_address, delivery_location, payment_method, bkash_trx_id, subtotal, delivery_charge, total, status, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', order)
+            except sqlite3.IntegrityError:
+                pass # Skip if order already exists
+
+        # Dummy data for previews (for chart visualization)
+        dummy_previews = [
+            ('John Doe', '1234567890', '123 Main St', '2024-01-18', 'Product A', 'Pending', '2024-01-10 10:00:00'),
+            ('Jane Smith', '0987654321', '456 Oak Ave', '2024-02-05', 'Product B', 'Confirmed', '2024-02-01 11:30:00'),
+            ('Peter Jones', '1122334455', '789 Pine Rd', '2024-02-28', 'Product C', 'Pending', '2024-02-20 14:00:00'),
+            ('Alice Brown', '5566778899', '101 Elm St', '2024-03-10', 'Product D', 'Completed', '2024-03-01 09:00:00'),
+            ('John Doe', '1234567890', '123 Main St', '2024-04-05', 'Product E', 'Pending', '2024-04-01 16:00:00'),
+            ('Jane Smith', '0987654321', '456 Oak Ave', '2024-05-15', 'Product F', 'Confirmed', '2024-05-10 13:00:00'),
+            ('Peter Jones', '1122334455', '789 Pine Rd', '2024-06-05', 'Product G', 'Pending', '2024-06-01 10:00:00'),
+            ('Alice Brown', '5566778899', '101 Elm St', '2024-07-20', 'Product H', 'Completed', '2024-07-10 11:30:00'),
+            ('John Doe', '1234567890', '123 Main St', '2024-08-10', 'Product I', 'Pending', '2024-08-01 14:00:00'),
+        ]
+        for preview in dummy_previews:
+            try:
+                db.execute('INSERT INTO previews (user_name, user_phone, preview_address, schedule_date, products, status, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)', preview)
+            except sqlite3.IntegrityError:
+                pass # Skip if preview already exists
+
         db.close()
 
 # Initialize the database when the app starts
@@ -312,24 +357,39 @@ def update_product(product_id):
         conn.close()
     return jsonify({"message": "success", "changes": 1})
 
-@app.route('/api/products/<int:product_id>', methods=['DELETE'])
-def delete_product(product_id):
-    conn = get_db_connection()
-    product = conn.execute('SELECT image FROM products WHERE id = ?', (product_id,)).fetchone()
-    if product and product['image']:
-        image_filenames = product['image'].split(',')
-        for filename in image_filenames:
-            filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename.strip())
-            if os.path.exists(filepath):
-                try:
-                    os.remove(filepath)
-                except OSError as e:
-                    print(f"Error deleting product image {filepath}: {e}")
-
-    conn.execute('DELETE FROM products WHERE id = ?', (product_id,))
-    conn.commit()
     conn.close()
     return jsonify({"message": "deleted", "changes": 1})
+
+# Dashboard Analytics
+@app.route('/api/dashboard/sales', methods=['GET'])
+def get_total_sales():
+    conn = get_db_connection()
+    total_sales = conn.execute("SELECT SUM(total) FROM new_orders WHERE status = 'Delivered'").fetchone()[0]
+    conn.close()
+    return jsonify({"total_sales": total_sales or 0})
+
+@app.route('/api/dashboard/previews/count', methods=['GET'])
+def get_preview_count():
+    conn = get_db_connection()
+    preview_count = conn.execute('SELECT COUNT(*) FROM previews').fetchone()[0]
+    conn.close()
+    return jsonify({"preview_count": preview_count or 0})
+
+@app.route('/api/dashboard/monthly_sales', methods=['GET'])
+def get_monthly_sales():
+    conn = get_db_connection()
+    # This query groups sales by month and year for delivered orders
+    monthly_sales = conn.execute("SELECT STRFTIME('%Y-%m', created_at) as month, SUM(total) as total_amount FROM new_orders WHERE status = 'Delivered' GROUP BY month ORDER BY month").fetchall()
+    conn.close()
+    return jsonify({"data": [dict(row) for row in monthly_sales]})
+
+@app.route('/api/dashboard/monthly_previews', methods=['GET'])
+def get_monthly_previews():
+    conn = get_db_connection()
+    # This query groups previews by month and year
+    monthly_previews = conn.execute("SELECT STRFTIME('%Y-%m', created_at) as month, COUNT(*) as total_previews FROM previews GROUP BY month ORDER BY month").fetchall()
+    conn.close()
+    return jsonify({"data": [dict(row) for row in monthly_previews]})
 
 # Categories
 @app.route('/api/categories', methods=['GET'])
@@ -655,3 +715,34 @@ def update_preview_status(preview_id):
 
 if __name__ == '__main__':
     app.run(debug=True, port=3000)
+
+# Dashboard Analytics
+@app.route('/api/dashboard/sales', methods=['GET'])
+def get_total_sales():
+    conn = get_db_connection()
+    total_sales = conn.execute('SELECT SUM(total) FROM new_orders').fetchone()[0]
+    conn.close()
+    return jsonify({"total_sales": total_sales or 0})
+
+@app.route('/api/dashboard/previews/count', methods=['GET'])
+def get_preview_count():
+    conn = get_db_connection()
+    preview_count = conn.execute('SELECT COUNT(*) FROM previews').fetchone()[0]
+    conn.close()
+    return jsonify({"preview_count": preview_count or 0})
+
+@app.route('/api/dashboard/monthly_sales', methods=['GET'])
+def get_monthly_sales():
+    conn = get_db_connection()
+    # This query groups sales by month and year
+    monthly_sales = conn.execute("SELECT STRFTIME('%Y-%m', created_at) as month, SUM(total) as total_amount FROM new_orders GROUP BY month ORDER BY month").fetchall()
+    conn.close()
+    return jsonify({"data": [dict(row) for row in monthly_sales]})
+
+@app.route('/api/dashboard/monthly_previews', methods=['GET'])
+def get_monthly_previews():
+    conn = get_db_connection()
+    # This query groups previews by month and year
+    monthly_previews = conn.execute("SELECT STRFTIME('%Y-%m', created_at) as month, COUNT(*) as total_previews FROM previews GROUP BY month ORDER BY month").fetchall()
+    conn.close()
+    return jsonify({"data": [dict(row) for row in monthly_previews]})

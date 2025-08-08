@@ -506,6 +506,88 @@ document.addEventListener('DOMContentLoaded', () => {
         const usersResponse = await fetch('http://localhost:3000/api/users');
         const usersData = await usersResponse.json();
         document.getElementById('total-customers').textContent = usersData.data.length;
+
+        const salesResponse = await fetch('http://localhost:3000/api/dashboard/sales');
+        const salesData = await salesResponse.json();
+        document.getElementById('total-sales').textContent = `৳${salesData.total_sales.toFixed(2)}`;
+
+        const previewsResponse = await fetch('http://localhost:3000/api/dashboard/previews/count');
+        const previewsData = await previewsResponse.json();
+        document.getElementById('total-previews').textContent = previewsData.preview_count;
+
+        // Fetch monthly sales and previews data for charts
+        const monthlySalesResponse = await fetch('http://localhost:3000/api/dashboard/monthly_sales');
+        const monthlySalesData = await monthlySalesResponse.json();
+
+        const monthlyPreviewsResponse = await fetch('http://localhost:3000/api/dashboard/monthly_previews');
+        const monthlyPreviewsData = await monthlyPreviewsResponse.json();
+
+        renderCharts(monthlySalesData.data, monthlyPreviewsData.data);
+    }
+
+    function renderCharts(salesData, previewsData) {
+        const salesCtx = document.getElementById('monthlySalesChart').getContext('2d');
+        const previewCtx = document.getElementById('monthlyPreviewsChart').getContext('2d');
+
+        const salesLabels = salesData.map(item => item.month);
+        const salesValues = salesData.map(item => item.total_amount);
+
+        const previewLabels = previewsData.map(item => item.month);
+        const previewValues = previewsData.map(item => item.total_previews);
+
+        new Chart(salesCtx, {
+            type: 'line',
+            data: {
+                labels: salesLabels,
+                datasets: [{
+                    label: 'Monthly Sales (৳)',
+                    data: salesValues,
+                    borderColor: 'rgb(75, 192, 192)',
+                    tension: 0.1,
+                    fill: false
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    title: {
+                        display: true,
+                        text: 'Monthly Sales Overview'
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+
+        new Chart(previewCtx, {
+            type: 'bar',
+            data: {
+                labels: previewLabels,
+                datasets: [{
+                    label: 'Monthly Preview Requests',
+                    data: previewValues,
+                    backgroundColor: 'rgb(255, 99, 132)'
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    title: {
+                        display: true,
+                        text: 'Monthly Preview Requests Overview'
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
     }
 
     async function loadBanners() {

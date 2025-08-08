@@ -37,8 +37,27 @@
                 <h3>Total Customers</h3>
                 <p id="total-customers">0</p>
             </div>
+            <div class="summary-card">
+                <h3>Total Sales</h3>
+                <p id="total-sales">৳0.00</p>
+            </div>
+            <div class="summary-card">
+                <h3>Total Previews</h3>
+                <p id="total-previews">0</p>
+            </div>
+        </section>
+
+        <section class="dashboard-charts">
+            <h2>Monthly Overview</h2>
+            <div class="chart-container">
+                <canvas id="monthlySalesChart"></canvas>
+            </div>
+            <div class="chart-container">
+                <canvas id="monthlyPreviewsChart"></canvas>
+            </div>
         </section>
     </div>
     <script src="app.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </body>
 </html>
