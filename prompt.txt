@@ -1,9 +1,10 @@
 Project Structure:
-- Navigate to the "admin" directory.
-- Locate and open the "customers.html" file.
+- Navigate to the "user" directory.
+- Locate and open the "index.html" file.
 
 Task Requirement:
--add there few action like active/inactive user, and if I want I deleted the user
+-In top nav bar there have a person icon. add some functionality on that when user click on that if user are not logged in then show action item to Login/Registration, after click on item then go to then login page.
+-If user are logged in the show user name, order, account, logout.
  
 Constraints:
 - Do not modify or affect any other existing functionality, layout, or design or any other project files if need     modify the other page based on requirement then do it.

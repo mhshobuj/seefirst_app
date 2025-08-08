@@ -461,11 +461,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const ordersData = await ordersResponse.json();
         document.getElementById('total-orders').textContent = ordersData.data.length;
 
-        const customersResponse = await fetch('http://localhost:3000/api/orders');
-        const customersData = await customersResponse.json();
-        const uniqueCustomers = new Set();
-        customersData.data.forEach(order => uniqueCustomers.add(order.customer_phone));
-        document.getElementById('total-customers').textContent = uniqueCustomers.size;
+        const usersResponse = await fetch('http://localhost:3000/api/users');
+        const usersData = await usersResponse.json();
+        document.getElementById('total-customers').textContent = usersData.data.length;
     }
 
     async function loadBanners() {

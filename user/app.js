@@ -598,6 +598,41 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // Initial cart count update
     updateCartCount();
+    updateUserMenu(); // Update user menu on page load
+
+    // Function to update user menu in navbar
+    function updateUserMenu() {
+        const userMenu = document.getElementById('user-menu');
+        if (!userMenu) return;
+
+        const isLoggedIn = localStorage.getItem('isLoggedIn');
+        const userData = JSON.parse(localStorage.getItem('userData'));
+
+        userMenu.innerHTML = ''; // Clear existing menu items
+
+        if (isLoggedIn === 'true' && userData) {
+            userMenu.innerHTML = `
+                <li><a class="dropdown-item" href="#">Hi, ${userData.name}</a></li>
+                <li><a class="dropdown-item" href="#">My Orders</a></li>
+                <li><a class="dropdown-item" href="#">My Account</a></li>
+                <li><hr class="dropdown-divider"></li>
+                <li><a class="dropdown-item" href="#" id="logout-btn">Logout</a></li>
+            `;
+            document.getElementById('logout-btn').addEventListener('click', logoutUser);
+        } else {
+            userMenu.innerHTML = `
+                <li><a class="dropdown-item" href="login.html">Login / Register</a></li>
+            `;
+        }
+    }
+
+    // Function to log out the user
+    function logoutUser() {
+        localStorage.removeItem('isLoggedIn');
+        localStorage.removeItem('userData');
+        updateUserMenu(); // Refresh the menu
+        window.location.href = 'index.html'; // Redirect to home page
+    }
 
     // Function to render cart items
     function renderCartItems() {

@@ -25,7 +25,12 @@
                 </div>
                 <div class="d-flex align-items-center ms-auto">
                     <a href="cart.html" class="me-3 text-dark"><i class="bi bi-cart-fill fs-5"></i></a>
-                    <a href="#" class="me-3 text-dark"><i class="bi bi-person-circle fs-5"></i></a>
+        <div class="dropdown">
+          <a href="#" class="me-3 text-dark dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false"><i class="bi bi-person-circle fs-5"></i></a>
+          <ul class="dropdown-menu dropdown-menu-end" id="user-menu">
+            <!-- User menu items will be loaded here -->
+          </ul>
+        </div>
                     <div class="dropdown">
                         <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">EN</a>
                         <ul class="dropdown-menu dropdown-menu-end">
@@ -56,7 +61,6 @@
                     <h4 class="fw-bold">Total: ৳<span id="cart-total-amount">0.00</span></h4>
                     <a href="#" class="btn btn-primary btn-lg mt-3" id="proceed-to-checkout-btn">Proceed to Checkout</a>
                     <a href="#" class="btn btn-secondary btn-lg mt-3 ms-3" id="request-preview-btn" style="display: none;">Request for preview</a>
-                    <button class="btn btn-danger btn-sm mt-3 ms-3" id="clear-storage-btn">Clear Storage (Dev)</button> 
                 </div>
             </div>
         </div>
@@ -144,12 +148,6 @@
                     const loginModal = new bootstrap.Modal(document.getElementById('loginRegisterModal'));
                     loginModal.show();
                 }
-            });
-
-            document.getElementById('clear-storage-btn').addEventListener('click', () => {
-                localStorage.clear();
-                console.log('localStorage cleared.');
-                location.reload();
             });
         });
 

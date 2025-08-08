@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -26,7 +25,12 @@
                 </div>
                 <div class="d-flex align-items-center ms-auto">
                     <a href="cart.html" class="me-3 text-dark"><i class="bi bi-cart-fill fs-5"></i></a>
-                    <a href="#" class="me-3 text-dark"><i class="bi bi-person-circle fs-5"></i></a>
+                    <div class="dropdown">
+                      <a href="#" class="me-3 text-dark dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false"><i class="bi bi-person-circle fs-5"></i></a>
+                      <ul class="dropdown-menu dropdown-menu-end" id="user-menu">
+                        <!-- User menu items will be loaded here -->
+                      </ul>
+                    </div>
                     <div class="dropdown">
                         <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">EN</a>
                         <ul class="dropdown-menu dropdown-menu-end">
