@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order Confirmation</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            background-color: #f8f9fa;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .confirmation-container {
+            max-width: 600px;
+            margin: 50px auto;
+            background-color: #fff;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+            text-align: center;
+        }
+        .checkmark-animation {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background-color: #28a745;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 30px;
+            animation: scale-in 0.5s ease-in-out;
+        }
+        .checkmark-animation i {
+            color: #fff;
+            font-size: 50px;
+        }
+        @keyframes scale-in {
+            from {
+                transform: scale(0.5);
+                opacity: 0;
+            }
+            to {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+        h1 {
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 15px;
+        }
+        .confirmation-message {
+            color: #555;
+            margin-bottom: 30px;
+        }
+        .order-summary {
+            text-align: left;
+            margin-bottom: 30px;
+        }
+        .order-summary h4 {
+            color: #333;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+        .product-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        .product-item img {
+            width: 60px;
+            height: 60px;
+            border-radius: 5px;
+            margin-right: 15px;
+        }
+        .product-details {
+            flex-grow: 1;
+        }
+        .product-details p {
+            margin: 0;
+            color: #555;
+        }
+        .product-price {
+            font-weight: 600;
+            color: #333;
+        }
+        .cost-breakdown {
+            text-align: left;
+            margin-bottom: 30px;
+        }
+        .cost-breakdown .row {
+            margin-bottom: 5px;
+        }
+        .cost-breakdown .col-8 {
+            color: #555;
+        }
+        .cost-breakdown .col-4 {
+            font-weight: 600;
+            color: #333;
+        }
+        .total-cost {
+            border-top: 2px solid #eee;
+            padding-top: 15px;
+            margin-top: 15px;
+        }
+        .total-cost .col-8 {
+            font-weight: 700;
+            font-size: 1.1rem;
+        }
+        .total-cost .col-4 {
+            font-weight: 700;
+            font-size: 1.1rem;
+        }
+        .action-buttons .btn {
+            padding: 12px 30px;
+            font-size: 1rem;
+            margin: 0 10px;
+        }
+        .footer {
+            margin-top: 40px;
+            font-size: 0.9rem;
+            color: #888;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="confirmation-container">
+        <div class="checkmark-animation">
+            <i class="fas fa-check"></i>
+        </div>
+        <h1>Order Placed Successfully!</h1>
+        <div class="confirmation-message">
+            <p>Thank you for your purchase. Your order is being processed.</p>
+            <p><strong>Order Number:</strong> <span id="order-id"></span></p>
+            <p><strong>Date:</strong> <span id="order-date"></span></p>
+            <p><strong>Estimated Delivery:</strong> <span id="estimated-delivery"></span></p>
+        </div>
+
+        <div class="order-summary">
+            <h4>Purchase Summary</h4>
+            <div id="product-list">
+                <!-- Product items will be injected here -->
+            </div>
+        </div>
+
+        <div class="cost-breakdown">
+            <div class="row">
+                <div class="col-8">Subtotal</div>
+                <div class="col-4 text-end">৳<span id="subtotal"></span></div>
+            </div>
+            <div class="row">
+                <div class="col-8">Shipping</div>
+                <div class="col-4 text-end">৳<span id="shipping"></span></div>
+            </div>
+            <div class="row">
+                <div class="col-8">Tax (0%)</div>
+                <div class="col-4 text-end">৳0.00</div>
+            </div>
+            <div class="row total-cost">
+                <div class="col-8"><strong>Total</strong></div>
+                <div class="col-4 text-end"><strong>৳<span id="total-cost"></span></strong></div>
+            </div>
+        </div>
+
+        <div class="action-buttons">
+            <button class="btn btn-primary">Track Order</button>
+            <a href="index.html" class="btn btn-outline-secondary">Continue Shopping</a>
+        </div>
+
+        <div class="footer">
+            <p>Need help? Contact us at <a href="mailto:support@seefirst.com">support@seefirst.com</a></p>
+        </div>
+    </div>
+
+    <script>
+            document.addEventListener('DOMContentLoaded', async () => {
+                const urlParams = new URLSearchParams(window.location.search);
+                const orderId = urlParams.get('order_id');
+
+                if (orderId) {
+                    document.getElementById('order-id').textContent = orderId;
+
+                    try {
+                        const response = await fetch(`http://localhost:3000/api/orders/${orderId}`);
+                        if (!response.ok) {
+                            throw new Error('Order not found');
+                        }
+                        const orderDetails = await response.json();
+
+                        document.getElementById('order-date').textContent = new Date(orderDetails.created_at).toLocaleDateString();
+                        document.getElementById('estimated-delivery').textContent = orderDetails.delivery_location === 'inside_dhaka' ? '2-3 business days' : '3-5 business days';
+                        document.getElementById('subtotal').textContent = orderDetails.subtotal.toFixed(2);
+                        document.getElementById('shipping').textContent = orderDetails.delivery_charge.toFixed(2);
+                        document.getElementById('total-cost').textContent = orderDetails.total.toFixed(2);
+
+                        const productList = document.getElementById('product-list');
+                        let productHtml = '';
+                        orderDetails.items.forEach(product => {
+                            productHtml += `
+                                <div class="product-item">
+                                    <img src="http://localhost:3000/${product.image}" alt="${product.name}">
+                                    <div class="product-details">
+                                        <p><strong>${product.name}</strong></p>
+                                        <p>Quantity: ${product.quantity}</p>
+                                    </div>
+                                    <div class="product-price">৳${(product.price * product.quantity).toFixed(2)}</div>
+                                </div>
+                            `;
+                        });
+                        productList.innerHTML = productHtml;
+
+                    } catch (error) {
+                        console.error('Error fetching order details:', error);
+                        const confirmationContainer = document.querySelector('.confirmation-container');
+                        confirmationContainer.innerHTML = `<h1>Error</h1><p>Could not retrieve order details. Please contact support.</p>`;
+                    }
+                } else {
+                    const confirmationContainer = document.querySelector('.confirmation-container');
+                    confirmationContainer.innerHTML = `<h1>Error</h1><p>No order ID provided.</p>`;
+                }
+            });
+        </script>
+
+</body>
+</html>

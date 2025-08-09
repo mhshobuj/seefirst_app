@@ -1,10 +1,9 @@
 Project Structure:
-- Navigate to the "admin" directory.
-- Locate and open the "index.html" file.
+- Navigate to the "user" directory.
+- Locate and open the "order_confirmation.html" file.
 
 Task Requirement:
--in admin page there need show more info like total sell price, preview order count value, if possible show all this in graph view.
--make the look professional and default show in monthly wise, if need then I can filter it.
+-in this page under the "Purchase Summary" added the purchased product list.
  
 Constraints:
 - Do not modify or affect any other existing functionality, layout, or design or any other project files if need     modify the other page based on requirement then do it.

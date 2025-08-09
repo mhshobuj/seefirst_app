@@ -225,7 +225,7 @@
 
                 if (response.ok) {
                     const result = await response.json();
-                    showConfirmationModal(result.order_id, orderDetails);
+                    window.location.href = `order_confirmation.html?order_id=${result.order_id}`;
                     localStorage.removeItem('cart'); // Clear cart after successful order
                 } else {
                     const errorData = await response.json();

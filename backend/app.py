@@ -486,6 +486,28 @@ def add_order():
     conn.close()
     return jsonify({"message": "success", "data": {'id': order_id, 'product_id': product_id, 'quantity': quantity, 'customer_name': customer_name, 'customer_phone': customer_phone}}), 201
 
+@app.route('/api/orders/<int:order_id>', methods=['GET'])
+def get_order(order_id):
+    conn = get_db_connection()
+    order = conn.execute('SELECT * FROM new_orders WHERE id = ?', (order_id,)).fetchone()
+    if order is None:
+        conn.close()
+        return jsonify({'message': 'Order not found'}), 404
+
+    items = conn.execute('''
+        SELECT p.name, p.image, i.quantity, i.price 
+        FROM order_items i
+        JOIN products p ON i.product_id = p.id
+        WHERE i.order_id = ?
+    ''', (order_id,)).fetchall()
+    
+    conn.close()
+
+    order_data = dict(order)
+    order_data['items'] = [dict(item) for item in items]
+    
+    return jsonify(order_data)
+
 @app.route('/api/orders/<int:order_id>', methods=['PUT'])
 def update_order_status(order_id):
     updated_order = request.json
