@@ -47,7 +47,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     // Function to fetch and display products
-    async function loadProducts(containerSelector, limit = null, cardClass = '', categoryId = null, sort = null, isCarousel = false, searchQuery = null, page = 1, showShimmer = true) {
+    async function loadProducts(containerSelector, limit = null, cardClass = '', categoryId = null, sort = null, isCarousel = false, searchQuery = null, page = 1, showShimmer = true, condition = null) {
         const productContainer = document.querySelector(containerSelector);
         if (!productContainer) return;
 
@@ -83,6 +83,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
         if (searchQuery) {
             params.append('search', searchQuery);
+        }
+        if (condition) {
+            params.append('condition', condition);
         }
         params.append('page', page);
 
@@ -194,8 +197,9 @@ document.addEventListener('DOMContentLoaded', async () => {
                 item.addEventListener('click', function(event) {
                     event.preventDefault();
                     const sortOption = this.dataset.sort;
+                    const conditionOption = this.dataset.condition;
                     const currentCategoryId = document.querySelector('#category-filter-container .active').dataset.categoryId;
-                    loadProducts('#product-listing-container', null, '', currentCategoryId, sortOption);
+                    loadProducts('#product-listing-container', null, '', currentCategoryId, sortOption, false, null, 1, true, conditionOption);
                 });
             });
         }

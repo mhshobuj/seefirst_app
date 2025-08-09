@@ -224,6 +224,7 @@ def get_products():
     category_id = request.args.get('category_id')
     sort_option = request.args.get('sort')
     search_query = request.args.get('search')
+    condition = request.args.get('condition')
     page = request.args.get('page', 1, type=int)
     per_page = request.args.get('per_page', 10, type=int)
 
@@ -247,6 +248,14 @@ def get_products():
         where_clauses.append('(name LIKE ? OR description LIKE ?)')
         params.append(search_pattern)
         params.append(search_pattern)
+
+    if condition:
+        if condition.lower() == 'new':
+            where_clauses.append("(LOWER(condition) = ? OR condition IS NULL)")
+            params.append('new')
+        else:
+            where_clauses.append("LOWER(condition) = ?")
+            params.append(condition.lower())
 
     if where_clauses:
         query += ' WHERE ' + ' AND '.join(where_clauses)
