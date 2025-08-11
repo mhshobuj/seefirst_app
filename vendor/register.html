@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Become a Vendor - SeeFirst</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <div class="form-container">
+            <h2>Become a Vendor</h2>
+            <p>Fill out the form below to register your store. Your application will be reviewed by an administrator.</p>
+            <form id="vendor-register-form">
+                <div class="form-group">
+                    <label for="store-name">Store Name</label>
+                    <input type="text" id="store-name" name="store-name" required>
+                </div>
+                <div class="form-group">
+                    <label for="store-description">Store Description</label>
+                    <textarea id="store-description" name="store-description" rows="4"></textarea>
+                </div>
+                <button type="submit" class="btn">Submit Application</button>
+            </form>
+            <div id="message" class="message"></div>
+             <p class="login-link">Already a vendor? <a href="/vendor/login.html">Login here</a></p>
+        </div>
+    </div>
+    <script src="app.js"></script>
+</body>
+</html>

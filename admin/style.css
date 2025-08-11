@@ -241,7 +241,8 @@ section form button {
 }
 
 /* Product Page Styles */
-.product-management {
+.product-management,
+.vendor-management {
     background-color: white;
     padding: 20px;
     border-radius: 8px;
@@ -298,4 +299,24 @@ section form button {
     text-decoration: none;
     background-color: #e9ecef;
     border-color: #dee2e6;
+}
+
+/* Vendor Management Styles */
+.status-approved {
+    color: #28a745;
+    font-weight: bold;
+}
+
+.status-pending {
+    color: #ffc107;
+    font-weight: bold;
+}
+
+.btn-approve {
+    background-color: #28a745;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 4px;
+    cursor: pointer;
 }

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Manage Customers</title>
+    <title>Manage Vendors - Admin</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -17,27 +17,29 @@
             <li><a href="customers.html">Customers</a></li>
             <li><a href="banners.html">Banners</a></li>
             <li><a href="previews.html">Previews</a></li>
-            <li><a href="vendors.html">Vendors</a></li>
+            <li><a href="vendors.html" class="active">Vendors</a></li>
             <li><a href="#" id="logoutButton">Logout</a></li>
         </ul>
     </div>
     <div class="main-content">
         <header>
-            <h1>Manage Customers</h1>
+            <h1>Vendor Management</h1>
         </header>
-        <section class="customer-management">
-            <h2>All Customers</h2>
-            <table id="customersTable">
+        <section class="vendor-management">
+            <h2>All Vendors</h2>
+            <table id="vendors-table">
                 <thead>
                     <tr>
-                        <th>Customer Name</th>
-                        <th>Customer Phone</th>
-                        <th>Order Count</th>
+                        <th>Store Name</th>
+                        <th>Owner Name</th>
+                        <th>Email</th>
+                        <th>Phone</th>
+                        <th>Status</th>
                         <th>Actions</th>
                     </tr>
                 </thead>
-                <tbody>
-                    <!-- Customer rows will be inserted here by JavaScript -->
+                <tbody id="vendors-tbody">
+                    <!-- Vendor data will be loaded here -->
                 </tbody>
             </table>
         </section>

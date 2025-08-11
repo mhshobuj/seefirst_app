@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vendor Dashboard - SeeFirst</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="dashboard.css">
+</head>
+<body>
+    <div class="dashboard-container">
+        <nav class="sidebar">
+            <div class="sidebar-header">
+                <h3>Vendor Portal</h3>
+            </div>
+            <ul class="sidebar-menu">
+                <li class="active"><a href="/vendor/dashboard.html">Dashboard</a></li>
+                <li><a href="/vendor/products.html">Products</a></li>
+                <li><a href="/vendor/orders.html">Orders</a></li>
+                <li><a href="#" id="logout-btn">Logout</a></li>
+            </ul>
+        </nav>
+        <main class="main-content">
+            <header class="main-header">
+                <h2>Dashboard</h2>
+                <div class="user-info">
+                    Welcome, <span id="user-name"></span>!
+                </div>
+            </header>
+            <div class="content-wrapper">
+                <div id="approval-status" class="status-banner"></div>
+                <div class="dashboard-widgets">
+                    <div class="widget">
+                        <h3>Store Name</h3>
+                        <p id="store-name"></p>
+                    </div>
+                    <div class="widget">
+                        <h3>Total Products</h3>
+                        <p id="total-products">0</p>
+                    </div>
+                    <div class="widget">
+                        <h3>Pending Orders</h3>
+                        <p id="pending-orders">0</p>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+    <script src="app.js"></script>
+</body>
+</html>
