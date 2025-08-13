@@ -118,11 +118,16 @@ def init_db():
                 user_id INTEGER NOT NULL UNIQUE,
                 store_name TEXT NOT NULL,
                 store_description TEXT,
+                store_location TEXT,
                 is_approved BOOLEAN DEFAULT 0,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 FOREIGN KEY (user_id) REFERENCES users(id)
             )
         ''')
+        try:
+            db.execute("ALTER TABLE vendors ADD COLUMN store_location TEXT");
+        except sqlite3.OperationalError as e:
+            if "duplicate column name" not in str(e): raise
 
         # Product Table Modifications
         db.execute('''
@@ -254,6 +259,19 @@ def init_db():
 
 init_db()
 
+# Serve static files for frontend applications
+@app.route('/admin/<path:filename>')
+def admin_static(filename):
+    return send_from_directory('../admin', filename)
+
+@app.route('/user/<path:filename>')
+def user_static(filename):
+    return send_from_directory('../user', filename)
+
+@app.route('/vendor/<path:filename>')
+def vendor_static(filename):
+    return send_from_directory('../vendor', filename)
+
 # --- API Endpoints ---
 
 # Products
@@ -308,6 +326,47 @@ def add_product(current_user, vendor):
     return jsonify({"message": "success", "data": {'id': product_id}}), 201
 
 # ... other product endpoints
+
+@app.route('/api/categories', methods=['GET'])
+def get_categories():
+    conn = get_db_connection()
+    categories = conn.execute('SELECT * FROM categories').fetchall()
+    conn.close()
+    return jsonify({"message": "success", "data": [dict(row) for row in categories]})
+
+@app.route('/api/categories', methods=['POST'])
+@admin_required
+def add_category(current_user):
+    name = request.form['name']
+    image_filename = None
+
+    if 'image' in request.files:
+        file = request.files['image']
+        if file.filename != '':
+            filename = str(uuid.uuid4()) + os.path.splitext(file.filename)[1]
+            temp_path = os.path.join(app.config['UPLOAD_FOLDER'], "temp_" + filename)
+            file.save(temp_path)
+            resize_image(temp_path, os.path.join(app.config['UPLOAD_FOLDER'], filename))
+            os.remove(temp_path)
+            image_filename = filename
+
+    conn = get_db_connection()
+    try:
+        cursor = conn.execute('INSERT INTO categories (name, image) VALUES (?, ?)',
+                             (name, image_filename))
+        conn.commit()
+        category_id = cursor.lastrowid
+        conn.close()
+        return jsonify({"message": "Category added successfully", "data": {'id': category_id}}), 201
+    except sqlite3.IntegrityError as e:
+        conn.rollback()
+        conn.close()
+        return jsonify({'error': 'Category with this name already exists.'}), 409
+    except Exception as e:
+        conn.rollback()
+        conn.close()
+        return jsonify({'error': str(e)}), 500
+
 
 # Orders
 @app.route('/create-order', methods=['POST'])
@@ -405,32 +464,41 @@ def get_vendor_products(current_user, vendor):
     return jsonify({"data": [dict(row) for row in products]})
 
 @app.route('/api/vendor/register', methods=['POST'])
-@token_required
-def vendor_register(current_user):
+def vendor_register():
     data = request.json
+    name = data.get('name')
+    email = data.get('email')
+    phone = data.get('phone')
+    password = data.get('password')
     store_name = data.get('store_name')
     store_description = data.get('store_description')
+    store_location = data.get('store_location')
 
-    if not store_name:
-        return jsonify({'error': 'Store name is required'}), 400
+    if not name or not phone or not password or not store_name or not store_location:
+        return jsonify({'error': 'All required fields (Name, Phone, Password, Store Name, Store Location) must be provided.'}), 400
 
     conn = get_db_connection()
-    
-    existing_vendor = conn.execute('SELECT * FROM vendors WHERE user_id = ?', (current_user['id'],)).fetchone()
-    if existing_vendor:
-        conn.close()
-        return jsonify({'error': 'You have already applied to be a vendor.'}), 409
-
     try:
-        conn.execute('INSERT INTO vendors (user_id, store_name, store_description) VALUES (?, ?, ?)',
-                     (current_user['id'], store_name, store_description))
-        conn.execute('UPDATE users SET role = ? WHERE id = ?', ('vendor', current_user['id']))
+        # 1. Create a new user account
+        cursor = conn.execute('INSERT INTO users (name, phone, email, password, role) VALUES (?, ?, ?, ?, ?)',
+                             (name, phone, email, password, 'vendor')) # Set role to vendor directly
+        user_id = cursor.lastrowid
+
+        # 2. Create the vendor entry linked to the new user
+        conn.execute('INSERT INTO vendors (user_id, store_name, store_description, store_location) VALUES (?, ?, ?, ?)',
+                     (user_id, store_name, store_description, store_location))
+        
         conn.commit()
         conn.close()
         return jsonify({'message': 'Vendor application submitted successfully. Please wait for admin approval.'}), 201
     except sqlite3.IntegrityError as e:
+        conn.rollback() # Rollback user creation if vendor creation fails
         conn.close()
-        return jsonify({'error': 'An error occurred.', 'details': str(e)}), 500
+        if "UNIQUE constraint failed: users.phone" in str(e):
+            return jsonify({'error': 'Phone number already registered.'}), 409
+        elif "UNIQUE constraint failed: users.email" in str(e):
+            return jsonify({'error': 'Email already registered.'}), 409
+        return jsonify({'error': 'An error occurred during registration.', 'details': str(e)}), 500
 
 @app.route('/api/vendor/dashboard', methods=['GET'])
 @vendor_required
@@ -460,7 +528,7 @@ def vendor_dashboard(current_user, vendor):
 @admin_required
 def get_all_vendors(current_user):
     conn = get_db_connection()
-    vendors = conn.execute('SELECT v.id, v.store_name, v.is_approved, u.name, u.email, u.phone FROM vendors v JOIN users u ON v.user_id = u.id').fetchall()
+    vendors = conn.execute('SELECT v.id, v.store_name, v.store_description, v.store_location, v.is_approved, u.name, u.email, u.phone FROM vendors v JOIN users u ON v.user_id = u.id').fetchall()
     conn.close()
     return jsonify({'data': [dict(row) for row in vendors]})
 

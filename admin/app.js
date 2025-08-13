@@ -51,9 +51,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const response = await fetch('http://localhost:3000' + url, { ...options, headers });
         if (response.status === 401 || response.status === 403) {
             logout();
-            return;
+            return null;
         }
-        return response.json();
+        return response; // Return the full response
     }
 
     // --- Page Routing ---
@@ -66,19 +66,24 @@ document.addEventListener('DOMContentLoaded', () => {
             loadProducts();
             document.getElementById('addProductForm').addEventListener('submit', addProduct);
         },
-        'orders.html': loadOrders
+        'orders.html': loadOrders,
+        'categories.html': handleCategoriesPage // Added categories route
         // Add other pages if needed
     };
     if (routes[path]) routes[path]();
 
     // --- Vendor Management ---
     async function loadVendors() {
-        const { data } = await fetchAPI('/api/admin/vendors');
+        const response = await fetchAPI('/api/admin/vendors');
+        if (!response) return;
+        const { data } = await response.json();
         const tbody = document.getElementById('vendors-tbody');
         tbody.innerHTML = '';
         data.forEach(vendor => {
             const row = tbody.insertRow();
             row.innerHTML = `<td>${vendor.store_name}</td>
+                           <td>${vendor.store_description || 'N/A'}</td>
+                           <td>${vendor.store_location || 'N/A'}</td>
                            <td>${vendor.name}</td>
                            <td>${vendor.email || 'N/A'}</td>
                            <td>${vendor.phone}</td>
@@ -101,7 +106,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Product Management ---
     async function loadProducts() {
-        const { data } = await fetchAPI('/api/products'); // Assuming this endpoint will be admin-protected
+        const response = await fetchAPI('/api/products'); // Assuming this endpoint will be admin-protected
+        if (!response) return;
+        const { data } = await response.json();
         const tbody = document.getElementById('products-tbody');
         tbody.innerHTML = '';
         data.forEach(product => {
@@ -125,7 +132,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Order Management ---
     async function loadOrders() {
-        const { data } = await fetchAPI('/api/orders'); // Assuming this is admin-protected
+        const response = await fetchAPI('/api/orders'); // Assuming this is admin-protected
+        if (!response) return;
+        const { data } = await response.json();
         const tbody = document.getElementById('orders-tbody');
         tbody.innerHTML = '';
         data.forEach(order => {
@@ -139,13 +148,105 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    async function handleCategoriesPage() {
+        checkAuth(); // Simplified auth check
+
+        const addCategoryForm = document.getElementById('addCategoryForm');
+        const categoriesTableBody = document.getElementById('categories-tbody');
+        const formMessage = document.createElement('div'); // Create a message element
+        addCategoryForm.parentNode.insertBefore(formMessage, addCategoryForm.nextSibling);
+
+
+        // Function to load categories
+        async function loadCategories() {
+            try {
+                const response = await fetchAPI('/api/categories');
+                if (!response) return;
+
+                if (!response.ok) {
+                    throw new Error(`Failed to fetch categories: ${response.statusText}`);
+                }
+                const result = await response.json();
+                categoriesTableBody.innerHTML = '';
+                if (result.data) {
+                    result.data.forEach(category => {
+                        const row = categoriesTableBody.insertRow();
+                        row.innerHTML = `
+                            <td>${category.id}</td>
+                            <td>${category.name}</td>
+                            <td><img src="http://localhost:3000/uploads/${category.image}" alt="${category.name}" width="50"></td>
+                            <td>
+                                <button class="btn-sm">Edit</button>
+                                <button class="btn-sm btn-danger">Delete</button>
+                            </td>
+                        `;
+                    });
+                }
+            } catch (error) {
+                console.error('Error loading categories:', error);
+                categoriesTableBody.innerHTML = '<tr><td colspan="4">Error loading categories.</td></tr>';
+            }
+        }
+
+        // Handle Add Category form submission
+        addCategoryForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            formMessage.innerHTML = '';
+            formMessage.className = 'message';
+
+            const formData = new FormData();
+            const categoryName = document.getElementById('categoryName').value;
+            const imageInput = document.getElementById('categoryImage');
+
+            if (!categoryName.trim()) {
+                formMessage.textContent = 'Category name is required.';
+                formMessage.className = 'message error';
+                return;
+            }
+
+            formData.append('name', categoryName);
+            if (imageInput.files.length > 0) {
+                formData.append('image', imageInput.files[0]);
+            }
+
+            try {
+                const response = await fetchAPI('/api/categories', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (!response) return; // Early exit if fetch was aborted
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    formMessage.textContent = 'Category added successfully!';
+                    formMessage.className = 'message success';
+                    addCategoryForm.reset();
+                    loadCategories();
+                } else {
+                    formMessage.textContent = result.error || 'Failed to add category.';
+                    formMessage.className = 'message error';
+                }
+            } catch (error) {
+                console.error('Error adding category:', error);
+                formMessage.textContent = 'An error occurred while adding the category.';
+                formMessage.className = 'message error';
+            }
+        });
+
+        // Initial load of categories
+        loadCategories();
+    }
+
     // --- Dashboard ---
     async function loadDashboardSummary() {
         // Placeholder - this would fetch aggregated data
         document.getElementById('total-sales').textContent = 'Loading...';
         document.getElementById('total-orders').textContent = 'Loading...';
         document.getElementById('total-customers').textContent = 'Loading...';
-        document.getElementById('total-vendors').textContent = 'Loading...';
+        document.getElementById('total-products').textContent = 'Loading...'; // Corrected from total-vendors
+        document.getElementById('total-previews').textContent = 'Loading...'; // Added total-previews
     }
 
     checkAuth();

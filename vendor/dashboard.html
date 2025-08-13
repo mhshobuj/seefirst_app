@@ -4,47 +4,50 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Vendor Dashboard - SeeFirst</title>
-    <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="dashboard.css">
+    <!-- Bootstrap CSS -->
+    <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vendor Dashboard</title>
+        <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="dashboard-container">
-        <nav class="sidebar">
-            <div class="sidebar-header">
-                <h3>Vendor Portal</h3>
+    <div class="sidebar">
+        <h2>Vendor Panel</h2>
+        <ul>
+            <li><a href="dashboard.html" class="active">Dashboard</a></li>
+            <li><a href="products.html">Products</a></li>
+            <li><a href="orders.html">Orders</a></li>
+            <li><a href="#" id="logout-btn">Logout</a></li>
+        </ul>
+    </div>
+    <div class="main-content">
+        <header>
+            <h1>Dashboard</h1>
+            <div class="user-info">
+                Welcome, <span id="user-name"></span>!
             </div>
-            <ul class="sidebar-menu">
-                <li class="active"><a href="/vendor/dashboard.html">Dashboard</a></li>
-                <li><a href="/vendor/products.html">Products</a></li>
-                <li><a href="/vendor/orders.html">Orders</a></li>
-                <li><a href="#" id="logout-btn">Logout</a></li>
-            </ul>
-        </nav>
-        <main class="main-content">
-            <header class="main-header">
-                <h2>Dashboard</h2>
-                <div class="user-info">
-                    Welcome, <span id="user-name"></span>!
-                </div>
-            </header>
-            <div class="content-wrapper">
-                <div id="approval-status" class="status-banner"></div>
-                <div class="dashboard-widgets">
-                    <div class="widget">
-                        <h3>Store Name</h3>
-                        <p id="store-name"></p>
-                    </div>
-                    <div class="widget">
-                        <h3>Total Products</h3>
-                        <p id="total-products">0</p>
-                    </div>
-                    <div class="widget">
-                        <h3>Pending Orders</h3>
-                        <p id="pending-orders">0</p>
-                    </div>
-                </div>
+        </header>
+        <section class="dashboard-summary">
+            <div id="approval-status" class="summary-card"></div>
+            <div class="summary-card">
+                <h3>Store Name</h3>
+                <p id="store-name"></p>
             </div>
-        </main>
+            <div class="summary-card">
+                <h3>Total Products</h3>
+                <p id="total-products">0</p>
+            </div>
+            <div class="summary-card">
+                <h3>Pending Orders</h3>
+                <p id="pending-orders">0</p>
+            </div>
+        </section>
+
+        <!-- Placeholder for other content sections like Products and Orders -->
+        <!-- These will be loaded dynamically or linked to separate pages -->
     </div>
     <script src="app.js"></script>
 </body>

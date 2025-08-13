@@ -1,118 +1,62 @@
-/* General Dashboard Layout */
-.dashboard-container {
+/* Custom styles for the sidebar layout */
+
+#wrapper {
     display: flex;
-    height: 100vh;
-    background-color: #f8f9fa;
 }
 
-.sidebar {
-    width: 250px;
-    background-color: #343a40;
-    color: white;
-    display: flex;
-    flex-direction: column;
+#sidebar-wrapper {
+    min-height: 100vh;
+    margin-left: -15rem;
+    transition: margin .25s ease-out;
+    width: 15rem;
 }
 
-.sidebar-header {
-    padding: 20px;
-    text-align: center;
-    background-color: #495057;
+#sidebar-wrapper .sidebar-heading {
+    padding: 0.875rem 1.25rem;
+    font-size: 1.2rem;
 }
 
-.sidebar-header h3 {
-    margin: 0;
+#sidebar-wrapper .list-group {
+    width: 15rem;
 }
 
-.sidebar-menu {
-    list-style: none;
-    padding: 0;
-    margin: 20px 0;
+#page-content-wrapper {
+    min-width: 100vw;
 }
 
-.sidebar-menu li a {
-    display: block;
-    padding: 15px 20px;
-    color: #adb5bd;
-    text-decoration: none;
-    transition: background-color 0.3s, color 0.3s;
+#wrapper.toggled #sidebar-wrapper {
+    margin-left: 0;
 }
 
-.sidebar-menu li a:hover, .sidebar-menu li.active a {
-    background-color: #495057;
-    color: white;
+@media (min-width: 768px) {
+    #sidebar-wrapper {
+        margin-left: 0;
+    }
+
+    #page-content-wrapper {
+        min-width: 0;
+        width: 100%;
+    }
+
+    #wrapper.toggled #sidebar-wrapper {
+        margin-left: -15rem;
+    }
 }
 
-.main-content {
-    flex-grow: 1;
-    display: flex;
-    flex-direction: column;
+/* Custom styles for dashboard content */
+.alert {
+    margin-top: 15px;
 }
 
-.main-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 20px;
-    background-color: white;
-    border-bottom: 1px solid #dee2e6;
-}
-
-.main-header h2 {
-    margin: 0;
-}
-
-.user-info {
-    font-weight: bold;
-}
-
-.content-wrapper {
-    padding: 20px;
-    flex-grow: 1;
-    overflow-y: auto;
-}
-
-.status-banner {
-    padding: 15px;
-    margin-bottom: 20px;
-    border-radius: 5px;
-    font-weight: bold;
-    text-align: center;
-}
-
-.status-banner.pending {
-    background-color: #fff3cd;
-    color: #856404;
-}
-
-.status-banner.approved {
-    background-color: #d4edda;
-    color: #155724;
-}
-
-.dashboard-widgets {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 20px;
-}
-
-.widget {
-    background-color: white;
-    padding: 20px;
-    border-radius: 8px;
+.card {
     box-shadow: 0 2px 5px rgba(0,0,0,0.05);
 }
 
-.widget h3 {
-    margin-top: 0;
+.card-title {
     color: #007bff;
 }
 
-.widget p {
+.card-text {
     font-size: 24px;
     font-weight: bold;
-    margin: 10px 0 0;
-}
-
-#logout-btn {
-    cursor: pointer;
 }
