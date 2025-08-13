@@ -285,6 +285,15 @@ def get_products():
     conn.close()
     return jsonify({"message": "success", "data": [dict(row) for row in products]})
 
+@app.route('/api/products/<int:product_id>', methods=['GET'])
+def get_product(product_id):
+    conn = get_db_connection()
+    product = conn.execute('SELECT * FROM products WHERE id = ?', (product_id,)).fetchone()
+    conn.close()
+    if product is None:
+        return jsonify({'error': 'Product not found'}), 404
+    return jsonify({"message": "success", "data": dict(product)})
+
 @app.route('/api/products', methods=['POST'])
 @vendor_required
 def add_product(current_user, vendor):
@@ -299,7 +308,7 @@ def add_product(current_user, vendor):
     colors = request.form.get('colors')
     condition = request.form.get('condition')
     quantity = int(request.form.get('quantity', 0))
-    product_code = str(uuid.uuid4())
+    product_code = request.form.get('product_code', str(uuid.uuid4()))
     vendor_id = vendor['id']
 
     image_filenames = []
@@ -324,6 +333,66 @@ def add_product(current_user, vendor):
     product_id = cursor.lastrowid
     conn.close()
     return jsonify({"message": "success", "data": {'id': product_id}}), 201
+
+@app.route('/api/products/<int:product_id>', methods=['PUT'])
+@vendor_required
+def update_product(current_user, vendor, product_id):
+    if not vendor['is_approved']:
+        return jsonify({'error': 'Your vendor account is not approved to update products.'}), 403
+
+    conn = get_db_connection()
+    product = conn.execute('SELECT * FROM products WHERE id = ? AND vendor_id = ?', (product_id, vendor['id'])).fetchone()
+    if not product:
+        conn.close()
+        return jsonify({'error': 'Product not found or you do not have permission to edit it.'}), 404
+
+    name = request.form['name']
+    description = request.form.get('description')
+    price = float(request.form['price'])
+    offer_price = float(request.form.get('offer_price', 0.0))
+    category = request.form.get('category')
+    colors = request.form.get('colors')
+    condition = request.form.get('condition')
+    quantity = int(request.form.get('quantity', 0))
+
+    image_filenames = []
+    if 'images' in request.files:
+        files = request.files.getlist('images')
+        if len(files) > 5:
+            return jsonify({"error": "Maximum 5 images allowed"}), 400
+        for file in files:
+            if file.filename != '':
+                filename = str(uuid.uuid4()) + os.path.splitext(file.filename)[1]
+                temp_path = os.path.join(app.config['UPLOAD_FOLDER'], "temp_" + filename)
+                file.save(temp_path)
+                resize_image(temp_path, os.path.join(app.config['UPLOAD_FOLDER'], filename))
+                os.remove(temp_path)
+                image_filenames.append(filename)
+    image_paths = ', '.join(image_filenames) if image_filenames else product['image']
+
+
+    conn.execute('UPDATE products SET name = ?, description = ?, price = ?, offer_price = ?, image = ?, category = ?, colors = ?, condition = ?, quantity = ? WHERE id = ?',
+                 (name, description, price, offer_price, image_paths, category, colors, condition, quantity, product_id))
+    conn.commit()
+    conn.close()
+    return jsonify({"message": "Product updated successfully"})
+
+@app.route('/api/products/<int:product_id>', methods=['DELETE'])
+@vendor_required
+def delete_product(current_user, vendor, product_id):
+    if not vendor['is_approved']:
+        return jsonify({'error': 'Your vendor account is not approved to delete products.'}), 403
+
+    conn = get_db_connection()
+    product = conn.execute('SELECT * FROM products WHERE id = ? AND vendor_id = ?', (product_id, vendor['id'])).fetchone()
+    if not product:
+        conn.close()
+        return jsonify({'error': 'Product not found or you do not have permission to delete it.'}), 404
+
+    conn.execute('DELETE FROM products WHERE id = ?', (product_id,))
+    conn.commit()
+    conn.close()
+    return jsonify({'message': 'Product deleted successfully'})
 
 # ... other product endpoints
 

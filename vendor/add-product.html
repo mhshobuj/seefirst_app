@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Add New Product</title>
+    <title>Vendor Products</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -11,14 +11,14 @@
         <h2>Vendor Panel</h2>
         <ul>
             <li><a href="dashboard.html">Dashboard</a></li>
-            <li><a href="products.html">Products</a></li>
+            <li><a href="products.html" class="active">Products</a></li>
             <li><a href="orders.html">Orders</a></li>
             <li><a href="#" id="logout-btn">Logout</a></li>
         </ul>
     </div>
     <div class="main-content">
         <header>
-            <h1>Add New Product</h1>
+            <h1 id="page-title">Add New Product</h1>
             <div class="user-info">
                 Welcome, <span id="user-name"></span>!
             </div>
@@ -54,7 +54,7 @@
                     <option value="Used">Used</option>
                 </select>
                 <input type="number" id="productQuantity" placeholder="Quantity" required>
-                <button type="submit">Add Product</button>
+                <button type="submit" id="submit-btn">Add Product</button>
             </form>
         </section>
     </div>
