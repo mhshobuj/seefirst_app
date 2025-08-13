@@ -24,39 +24,9 @@
             </div>
         </header>
         <section class="product-management">
-            <h2>Add New Product</h2>
-            <form id="addProductForm">
-                <input type="text" id="productName" placeholder="Product Name" required>
-                <textarea id="productDescription" placeholder="Product Description"></textarea>
-                <input type="number" id="productPrice" placeholder="Regular Price" step="0.01" required>
-                <input type="number" id="productOfferPrice" placeholder="Offer Price" step="0.01">
-                <input type="file" id="productImage" accept="image/*" multiple>
-                <p>Max 5 photos</p>
-                <select id="productCategory" required>
-                    <option value="">Select a Category</option>
-                    <!-- Categories will be loaded by JS -->
-                </select>
-                <select id="productCondition" required>
-                    <option value="">Select Condition</option>
-                    <option value="New">New</option>
-                    <option value="Used">Used</option>
-                </select>
-                <div>
-                    <label>Colors:</label>
-                    <input type="checkbox" id="colorRed" name="color" value="Red">
-                    <label for="colorRed">Red</label>
-                    <input type="checkbox" id="colorGreen" name="color" value="Green">
-                    <label for="colorGreen">Green</label>
-                    <input type="checkbox" id="colorBlue" name="color" value="Blue">
-                    <label for="colorBlue">Blue</label>
-                    <input type="checkbox" id="colorBlack" name="color" value="Black">
-                    <label for="colorBlack">Black</label>
-                    <input type="checkbox" id="colorWhite" name="color" value="White">
-                    <label for="colorWhite">White</label>
-                </div>
-                <input type="number" id="productQuantity" placeholder="Quantity" required>
-                <button type="submit">Add Product</button>
-            </form>
+            <div class="product-actions">
+                <button onclick="location.href='add-product.html'" class="btn add-product-btn">Add New Product</button>
+            </div>
 
             <h2>Existing Products</h2>
             <table id="productsTable">

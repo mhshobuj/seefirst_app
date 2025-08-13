@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add New Product</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="sidebar">
+        <h2>Vendor Panel</h2>
+        <ul>
+            <li><a href="dashboard.html">Dashboard</a></li>
+            <li><a href="products.html">Products</a></li>
+            <li><a href="orders.html">Orders</a></li>
+            <li><a href="#" id="logout-btn">Logout</a></li>
+        </ul>
+    </div>
+    <div class="main-content">
+        <header>
+            <h1>Add New Product</h1>
+            <div class="user-info">
+                Welcome, <span id="user-name"></span>!
+            </div>
+        </header>
+        <section class="product-management">
+            <form id="addProductForm">
+                <input type="text" id="productName" placeholder="Product Name" required>
+                <textarea id="productDescription" placeholder="Product Description"></textarea>
+                <input type="number" id="productPrice" placeholder="Regular Price" step="0.01" required>
+                <input type="number" id="productOfferPrice" placeholder="Offer Price" step="0.01">
+                
+                <div id="image-upload-section">
+                    <h3>Product Images</h3>
+                    <div>
+                        <label for="defaultProductImage">Default Image</label>
+                        <input type="file" id="defaultProductImage" accept="image/*" multiple>
+                        <p>Max 5 photos</p>
+                    </div>
+                    <div id="color-wise-images">
+                        <h4>Color-wise Images</h4>
+                        <div id="color-image-pairs"></div>
+                        <button type="button" id="addColorImage" style="margin-top: 10px;">+ Add Color Image</button>
+                        <p>Max 5 photos</p>
+                    </div>
+                </div>
+                <select id="productCategory" required>
+                    <option value="">Select a Category</option>
+                    <!-- Categories will be loaded by JS -->
+                </select>
+                <select id="productCondition" required>
+                    <option value="">Select Condition</option>
+                    <option value="New">New</option>
+                    <option value="Used">Used</option>
+                </select>
+                <input type="number" id="productQuantity" placeholder="Quantity" required>
+                <button type="submit">Add Product</button>
+            </form>
+        </section>
+    </div>
+    <script src="app.js"></script>
+</body>
+</html>

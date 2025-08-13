@@ -274,3 +274,18 @@ section form button {
     font-weight: bold;
     color: #343a40; /* Match header text color */
 }
+
+.remove-color-image {
+    margin-left: 10px;
+}
+
+.product-actions {
+    text-align: right;
+    margin-bottom: 20px;
+}
+
+.add-product-btn {
+    padding: 8px 15px; /* Smaller padding */
+    font-size: 14px; /* Smaller font size */
+    width: auto; /* Override 100% width from .btn */
+}
