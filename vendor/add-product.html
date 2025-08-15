@@ -25,11 +25,26 @@
         </header>
         <section class="product-management">
             <form id="addProductForm">
-                <input type="text" id="productName" placeholder="Product Name" required>
-                <textarea id="productDescription" placeholder="Product Description"></textarea>
-                <input type="number" id="productPrice" placeholder="Regular Price" step="0.01" required>
-                <input type="number" id="productOfferPrice" placeholder="Offer Price" step="0.01">
+                <div class="form-group">
+                    <label for="productName">Product Name</label>
+                    <input type="text" id="productName" placeholder="Product Name" required>
+                </div>
+                <div class="form-group">
+                    <label for="productDescription">Product Description</label>
+                    <textarea id="productDescription" placeholder="Product Description"></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="productPrice">Regular Price</label>
+                    <input type="number" id="productPrice" placeholder="Regular Price" step="0.01" required>
+                </div>
+                <div class="form-group">
+                    <label for="productOfferPrice">Offer Price</label>
+                    <input type="number" id="productOfferPrice" placeholder="Offer Price" step="0.01">
+                </div>
                 
+                <div id="existing-images-container" class="image-previews">
+                    <!-- Existing images will be shown here -->
+                </div>
                 <div id="image-upload-section">
                     <h3>Product Images</h3>
                     <div>
@@ -44,16 +59,25 @@
                         <p>Max 5 photos</p>
                     </div>
                 </div>
-                <select id="productCategory" required>
-                    <option value="">Select a Category</option>
-                    <!-- Categories will be loaded by JS -->
-                </select>
-                <select id="productCondition" required>
-                    <option value="">Select Condition</option>
-                    <option value="New">New</option>
-                    <option value="Used">Used</option>
-                </select>
-                <input type="number" id="productQuantity" placeholder="Quantity" required>
+                <div class="form-group">
+                    <label for="productCategory">Category</label>
+                    <select id="productCategory" required>
+                        <option value="">Select a Category</option>
+                        <!-- Categories will be loaded by JS -->
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="productCondition">Condition</label>
+                    <select id="productCondition" required>
+                        <option value="">Select Condition</option>
+                        <option value="New">New</option>
+                        <option value="Used">Used</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="productQuantity">Quantity</label>
+                    <input type="number" id="productQuantity" placeholder="Quantity" required>
+                </div>
                 <button type="submit" id="submit-btn">Add Product</button>
             </form>
         </section>

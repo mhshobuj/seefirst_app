@@ -268,41 +268,42 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     async function handleAddProductPage() {
-        const auth = checkAuth();
-        if (!auth) return;
+    const auth = checkAuth();
+    if (!auth) return;
 
-        const addProductForm = document.getElementById('addProductForm');
-        const pageTitle = document.getElementById('page-title');
-        const submitBtn = document.getElementById('submit-btn');
+    const addProductForm = document.getElementById('addProductForm');
+    const pageTitle = document.getElementById('page-title');
+    const submitBtn = document.getElementById('submit-btn');
+    const existingImagesContainer = document.getElementById('existing-images-container');
+    const productCategorySelect = document.getElementById('productCategory');
 
-        const urlParams = new URLSearchParams(window.location.search);
-        const isEditMode = urlParams.get('edit') === 'true';
-        const productId = urlParams.get('id');
+    const urlParams = new URLSearchParams(window.location.search);
+    const isEditMode = urlParams.get('edit') === 'true';
+    const productId = urlParams.get('id');
+    let deletedImages = [];
 
-        // Fetch and populate categories dropdown
-        async function loadCategories() {
-            const productCategorySelect = document.getElementById('productCategory');
-            try {
-                const response = await fetchAPI('/api/categories'); // Assuming this endpoint exists
-                if (!response) return; // Stop execution if fetchAPI returned null
-                if (!response.ok) throw new Error('Failed to fetch categories');
-                const result = await response.json();
-                result.data.forEach(category => {
-                    const option = document.createElement('option');
-                    option.value = category.name;
-                    option.textContent = category.name;
-                    productCategorySelect.appendChild(option);
-                });
-            } catch (error) {
-                console.error('Error loading categories:', error);
-            }
+    async function loadInitialData() {
+        // First, load categories
+        try {
+            const response = await fetchAPI('/api/categories');
+            if (!response) return;
+            if (!response.ok) throw new Error('Failed to fetch categories');
+            const result = await response.json();
+            result.data.forEach(category => {
+                const option = document.createElement('option');
+                option.value = category.name;
+                option.textContent = category.name;
+                productCategorySelect.appendChild(option);
+            });
+        } catch (error) {
+            console.error('Error loading categories:', error);
         }
 
+        // If in edit mode, then load product data
         if (isEditMode && productId) {
             pageTitle.textContent = 'Edit Product';
             submitBtn.textContent = 'Update Product';
 
-            // Fetch product data and populate the form
             try {
                 const response = await fetchAPI(`/api/products/${productId}`);
                 if (!response) return;
@@ -314,66 +315,98 @@ document.addEventListener('DOMContentLoaded', () => {
                 document.getElementById('productDescription').value = product.description;
                 document.getElementById('productPrice').value = product.price;
                 document.getElementById('productOfferPrice').value = product.offer_price;
-                document.getElementById('productCategory').value = product.category;
                 document.getElementById('productCondition').value = product.condition;
                 document.getElementById('productQuantity').value = product.quantity;
+                
+                // Set the selected category
+                productCategorySelect.value = product.category;
+
+
+                // Display existing images
+                if (product.image) {
+                    const images = product.image.split(',');
+                    images.forEach(filename => {
+                        if (filename) {
+                            const imgPreview = document.createElement('div');
+                            imgPreview.className = 'img-preview';
+                            imgPreview.innerHTML = `
+                                <img src="http://localhost:3000/uploads/${filename.trim()}" alt="Product Image">
+                                <button type="button" class="delete-img-btn" data-filename="${filename.trim()}">X</button>
+                            `;
+                            existingImagesContainer.appendChild(imgPreview);
+                        }
+                    });
+
+                    // Add event listeners to delete buttons
+                    document.querySelectorAll('.delete-img-btn').forEach(button => {
+                        button.addEventListener('click', (e) => {
+                            const filename = e.target.dataset.filename;
+                            deletedImages.push(filename);
+                            e.target.parentElement.remove();
+                        });
+                    });
+                }
 
             } catch (error) {
                 console.error('Error loading product data for editing:', error);
                 alert('Failed to load product data for editing.');
             }
         }
-
-        // Handle Add/Edit Product form submission
-        addProductForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-
-            const formData = new FormData();
-            if (!isEditMode) {
-                const productCode = 'SF' + Date.now(); // Auto-generate product code for new products
-                formData.append('product_code', productCode);
-            }
-            formData.append('name', document.getElementById('productName').value);
-            formData.append('description', document.getElementById('productDescription').value);
-            formData.append('price', document.getElementById('productPrice').value);
-            formData.append('offer_price', document.getElementById('productOfferPrice').value || 0);
-            formData.append('category', document.getElementById('productCategory').value);
-            formData.append('condition', document.getElementById('productCondition').value);
-            formData.append('quantity', document.getElementById('productQuantity').value);
-
-            // Handle image updates if necessary (this part can be complex)
-            const defaultImageInput = document.getElementById('defaultProductImage');
-            if (defaultImageInput.files.length > 0) {
-                formData.append('default_image', defaultImageInput.files[0]);
-            }
-
-            const url = isEditMode ? `/api/products/${productId}` : '/api/products';
-            const method = isEditMode ? 'PUT' : 'POST';
-
-            try {
-                const response = await fetchAPI(url, {
-                    method: method,
-                    body: formData
-                });
-                if (!response) return;
-
-                const result = await response.json();
-
-                if (response.ok) {
-                    alert(`Product ${isEditMode ? 'updated' : 'added'} successfully!`);
-                    window.location.href = 'products.html';
-                } else {
-                    alert(`Failed to ${isEditMode ? 'update' : 'add'} product: ${result.error || 'Unknown error'}`);
-                }
-            } catch (error) {
-                console.error(`Error ${isEditMode ? 'updating' : 'adding'} product:`, error);
-                alert(`An error occurred while ${isEditMode ? 'updating' : 'adding'} the product.`);
-            }
-        });
-
-        // Initial load
-        loadCategories();
     }
+
+    // Handle Add/Edit Product form submission
+    addProductForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const formData = new FormData();
+        if (!isEditMode) {
+            const productCode = 'SF' + Date.now(); // Auto-generate product code for new products
+            formData.append('product_code', productCode);
+        }
+        formData.append('name', document.getElementById('productName').value);
+        formData.append('description', document.getElementById('productDescription').value);
+        formData.append('price', document.getElementById('productPrice').value);
+        formData.append('offer_price', document.getElementById('productOfferPrice').value || 0);
+        formData.append('category', document.getElementById('productCategory').value);
+        formData.append('condition', document.getElementById('productCondition').value);
+        formData.append('quantity', document.getElementById('productQuantity').value);
+        formData.append('deleted_images', deletedImages.join(','));
+
+
+        // Handle image updates if necessary (this part can be complex)
+        const defaultImageInput = document.getElementById('defaultProductImage');
+        for (let i = 0; i < defaultImageInput.files.length; i++) {
+            formData.append('images', defaultImageInput.files[i]);
+        }
+
+
+        const url = isEditMode ? `/api/products/${productId}` : '/api/products';
+        const method = isEditMode ? 'PUT' : 'POST';
+
+        try {
+            const response = await fetchAPI(url, {
+                method: method,
+                body: formData
+            });
+            if (!response) return;
+
+            const result = await response.json();
+
+            if (response.ok) {
+                alert(`Product ${isEditMode ? 'updated' : 'added'} successfully!`);
+                window.location.href = 'products.html';
+            } else {
+                alert(`Failed to ${isEditMode ? 'update' : 'add'} product: ${result.error || 'Unknown error'}`);
+            }
+        } catch (error) {
+            console.error(`Error ${isEditMode ? 'updating' : 'adding'} product:`, error);
+            alert(`An error occurred while ${isEditMode ? 'updating' : 'adding'} the product.`);
+        }
+    });
+
+    // Initial load
+    loadInitialData();
+}
 
     // Placeholder for handleOrdersPage
     async function handleOrdersPage() {

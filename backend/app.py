@@ -354,11 +354,26 @@ def update_product(current_user, vendor, product_id):
     colors = request.form.get('colors')
     condition = request.form.get('condition')
     quantity = int(request.form.get('quantity', 0))
+    
+    # Handle image updates
+    existing_images = product['image'].split(',') if product['image'] else []
+    deleted_images = request.form.get('deleted_images', '').split(',')
+    
+    # Remove deleted images
+    for filename in deleted_images:
+        if filename in existing_images:
+            existing_images.remove(filename)
+            # Also delete the file from the uploads folder
+            try:
+                os.remove(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+            except OSError as e:
+                print(f"Error deleting file {filename}: {e}")
 
-    image_filenames = []
+    # Add new images
+    new_image_filenames = []
     if 'images' in request.files:
         files = request.files.getlist('images')
-        if len(files) > 5:
+        if len(files) + len(existing_images) > 5:
             return jsonify({"error": "Maximum 5 images allowed"}), 400
         for file in files:
             if file.filename != '':
@@ -367,9 +382,10 @@ def update_product(current_user, vendor, product_id):
                 file.save(temp_path)
                 resize_image(temp_path, os.path.join(app.config['UPLOAD_FOLDER'], filename))
                 os.remove(temp_path)
-                image_filenames.append(filename)
-    image_paths = ', '.join(image_filenames) if image_filenames else product['image']
+                new_image_filenames.append(filename)
 
+    all_images = existing_images + new_image_filenames
+    image_paths = ','.join(all_images)
 
     conn.execute('UPDATE products SET name = ?, description = ?, price = ?, offer_price = ?, image = ?, category = ?, colors = ?, condition = ?, quantity = ? WHERE id = ?',
                  (name, description, price, offer_price, image_paths, category, colors, condition, quantity, product_id))
