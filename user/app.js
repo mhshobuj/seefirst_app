@@ -368,40 +368,50 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Function to load and display banners
     async function loadBanners() {
         console.log('Loading banners...');
-        const response = await fetch('http://localhost:3000/api/banners');
-        const data = await response.json();
-        const banners = data.data;
+        try {
+            const response = await fetch('http://localhost:3000/api/banners');
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            const data = await response.json();
+            const banners = data.data;
 
-        const bannerCarouselInner = document.querySelector('#banner-carousel-inner');
-        if (!bannerCarouselInner) return;
+            const bannerCarouselInner = document.querySelector('#banner-carousel-inner');
+            if (!bannerCarouselInner) return;
 
-        bannerCarouselInner.innerHTML = ''; // Clear existing content
+            bannerCarouselInner.innerHTML = ''; // Clear existing content
 
-        if (banners.length === 0) {
-            bannerCarouselInner.innerHTML = '<div class="carousel-item active"><p class="text-center">No promotional banners available.</p></div>';
-            return;
-        }
+            if (banners && banners.length > 0) {
+                banners.forEach((banner, index) => {
+                    const bannerItem = document.createElement('div');
+                    bannerItem.className = `carousel-item ${index === 0 ? 'active' : ''}`;
+                    bannerItem.innerHTML = `
+                        <img src="http://localhost:3000/uploads/${banner.image}" class="d-block w-100 rounded shadow-sm" alt="Promotional Banner ${index + 1}">
+                    `;
+                    bannerCarouselInner.appendChild(bannerItem);
+                    console.log(`Added banner ${index + 1}: ${banner.image}`);
+                });
 
-        banners.forEach((banner, index) => {
-            const bannerItem = document.createElement('div');
-            bannerItem.className = `carousel-item ${index === 0 ? 'active' : ''}`;
-            bannerItem.innerHTML = `
-                <img src="http://localhost:3000/uploads/${banner.image}" class="d-block w-100 rounded shadow-sm" alt="Promotional Banner ${index + 1}">
-            `;
-            bannerCarouselInner.appendChild(bannerItem);
-            console.log(`Added banner ${index + 1}: ${banner.image}`);
-        });
+                console.log(`Total banners added to DOM: ${banners.length}`);
 
-        console.log(`Total banners added to DOM: ${banners.length}`);
-
-        // Initialize Bootstrap Carousel AFTER all items are added
-        const myCarouselElement = document.querySelector('#promotionalBannerCarousel');
-        if (myCarouselElement) {
-            const carousel = new bootstrap.Carousel(myCarouselElement, {
-                interval: 3000, // Change image every 3 seconds
-                ride: 'carousel'
-            });
-            carousel.cycle(); // Explicitly start cycling
+                // Initialize Bootstrap Carousel AFTER all items are added
+                const myCarouselElement = document.querySelector('#promotionalBannerCarousel');
+                if (myCarouselElement) {
+                    const carousel = new bootstrap.Carousel(myCarouselElement, {
+                        interval: 3000, // Change image every 3 seconds
+                        ride: 'carousel'
+                    });
+                    carousel.cycle(); // Explicitly start cycling
+                }
+            } else {
+                bannerCarouselInner.innerHTML = '<div class="carousel-item active"><p class="text-center">No promotional banners available.</p></div>';
+            }
+        } catch (error) {
+            console.error("Could not load banners:", error);
+            const bannerCarouselInner = document.querySelector('#banner-carousel-inner');
+            if (bannerCarouselInner) {
+                bannerCarouselInner.innerHTML = '<div class="carousel-item active"><p class="text-center">Could not load banners.</p></div>';
+            }
         }
     }
 

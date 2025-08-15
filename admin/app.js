@@ -67,7 +67,8 @@ document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('addProductForm').addEventListener('submit', addProduct);
         },
         'orders.html': loadOrders,
-        'categories.html': handleCategoriesPage // Added categories route
+        'categories.html': handleCategoriesPage, // Added categories route
+        'banners.html': handleBannersPage
         // Add other pages if needed
     };
     if (routes[path]) routes[path]();
@@ -240,6 +241,96 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // --- Dashboard ---
+    async function handleBannersPage() {
+        checkAuth();
+
+        const bannerUploadForm = document.getElementById('bannerUploadForm');
+        const bannerList = document.getElementById('bannerList');
+        const uploadMessage = document.getElementById('uploadMessage');
+        const noBannersMessage = document.getElementById('noBannersMessage');
+
+        async function loadBanners() {
+            try {
+                const response = await fetchAPI('/api/banners');
+                if (!response) return;
+                const result = await response.json();
+
+                bannerList.innerHTML = '';
+                if (result.data && result.data.length > 0) {
+                    noBannersMessage.style.display = 'none';
+                    result.data.forEach(banner => {
+                        const bannerDiv = document.createElement('div');
+                        bannerDiv.className = 'banner-item';
+                        bannerDiv.innerHTML = `
+                            <img src="http://localhost:3000/uploads/${banner.image}" alt="Banner Image">
+                            <button class="btn-danger delete-banner-btn" data-banner-id="${banner.id}">Delete</button>
+                        `;
+                        bannerList.appendChild(bannerDiv);
+                    });
+
+                    document.querySelectorAll('.delete-banner-btn').forEach(button => {
+                        button.addEventListener('click', async (e) => {
+                            const bannerId = e.target.dataset.bannerId;
+                            if (confirm('Are you sure you want to delete this banner?')) {
+                                const deleteResponse = await fetchAPI(`/api/banners/${bannerId}`, { method: 'DELETE' });
+                                if (deleteResponse && deleteResponse.ok) {
+                                    loadBanners();
+                                } else {
+                                    alert('Failed to delete banner.');
+                                }
+                            }
+                        });
+                    });
+                } else {
+                    noBannersMessage.style.display = 'block';
+                }
+            } catch (error) {
+                console.error('Error loading banners:', error);
+            }
+        }
+
+        bannerUploadForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            uploadMessage.textContent = '';
+            uploadMessage.className = 'message';
+
+            const formData = new FormData();
+            const imageInput = document.getElementById('bannerImage');
+
+            if (imageInput.files.length === 0) {
+                uploadMessage.textContent = 'Please select an image to upload.';
+                uploadMessage.className = 'message error';
+                return;
+            }
+
+            formData.append('image', imageInput.files[0]);
+
+            try {
+                const response = await fetchAPI('/api/banners', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (response && response.ok) {
+                    uploadMessage.textContent = 'Banner uploaded successfully!';
+                    uploadMessage.className = 'message success';
+                    bannerUploadForm.reset();
+                    loadBanners();
+                } else {
+                    const result = await response.json();
+                    uploadMessage.textContent = result.error || 'Failed to upload banner.';
+                    uploadMessage.className = 'message error';
+                }
+            } catch (error) {
+                console.error('Error uploading banner:', error);
+                uploadMessage.textContent = 'An error occurred while uploading the banner.';
+                uploadMessage.className = 'message error';
+            }
+        });
+
+        loadBanners();
+    }
+
     async function loadDashboardSummary() {
         // Placeholder - this would fetch aggregated data
         document.getElementById('total-sales').textContent = 'Loading...';

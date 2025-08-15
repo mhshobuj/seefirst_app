@@ -7,6 +7,7 @@ from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
 import sqlite3
 from PIL import Image # Import Pillow
+import json
 
 app = Flask(__name__)
 CORS(app)
@@ -144,6 +145,7 @@ def init_db():
                 product_code TEXT,
                 quantity INTEGER,
                 vendor_id INTEGER,
+                color_images TEXT,
                 FOREIGN KEY (vendor_id) REFERENCES vendors(id)
             )
         ''')
@@ -169,6 +171,10 @@ def init_db():
             if "duplicate column name" not in str(e): raise
         try:
             db.execute("ALTER TABLE products ADD COLUMN vendor_id INTEGER REFERENCES vendors(id)");
+        except sqlite3.OperationalError as e:
+            if "duplicate column name" not in str(e): raise
+        try:
+            db.execute("ALTER TABLE products ADD COLUMN color_images TEXT");
         except sqlite3.OperationalError as e:
             if "duplicate column name" not in str(e): raise
 
@@ -324,11 +330,25 @@ def add_product(current_user, vendor):
                 resize_image(temp_path, os.path.join(app.config['UPLOAD_FOLDER'], filename))
                 os.remove(temp_path)
                 image_filenames.append(filename)
-    image_paths = ', '.join(image_filenames)
+    image_paths = ','.join(image_filenames)
+
+    color_images = {}
+    for key, file in request.files.items():
+        if key.startswith('color_images_'):
+            color_name = key.replace('color_images_', '')
+            filename = str(uuid.uuid4()) + os.path.splitext(file.filename)[1]
+            temp_path = os.path.join(app.config['UPLOAD_FOLDER'], "temp_" + filename)
+            file.save(temp_path)
+            resize_image(temp_path, os.path.join(app.config['UPLOAD_FOLDER'], filename))
+            os.remove(temp_path)
+            color_images[color_name] = filename
+    
+    color_images_json = json.dumps(color_images)
+
 
     conn = get_db_connection()
-    cursor = conn.execute('INSERT INTO products (name, description, price, offer_price, image, category, colors, condition, product_code, quantity, vendor_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', 
-                        (name, description, price, offer_price, image_paths, category, colors, condition, product_code, quantity, vendor_id))
+    cursor = conn.execute('INSERT INTO products (name, description, price, offer_price, image, category, colors, condition, product_code, quantity, vendor_id, color_images) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', 
+                        (name, description, price, offer_price, image_paths, category, colors, condition, product_code, quantity, vendor_id, color_images_json))
     conn.commit()
     product_id = cursor.lastrowid
     conn.close()
@@ -387,8 +407,24 @@ def update_product(current_user, vendor, product_id):
     all_images = existing_images + new_image_filenames
     image_paths = ','.join(all_images)
 
-    conn.execute('UPDATE products SET name = ?, description = ?, price = ?, offer_price = ?, image = ?, category = ?, colors = ?, condition = ?, quantity = ? WHERE id = ?',
-                 (name, description, price, offer_price, image_paths, category, colors, condition, quantity, product_id))
+    existing_color_images = json.loads(product['color_images']) if product['color_images'] else {}
+    
+    # Add new color images
+    for key, file in request.files.items():
+        if key.startswith('color_images_'):
+            color_name = key.replace('color_images_', '')
+            filename = str(uuid.uuid4()) + os.path.splitext(file.filename)[1]
+            temp_path = os.path.join(app.config['UPLOAD_FOLDER'], "temp_" + filename)
+            file.save(temp_path)
+            resize_image(temp_path, os.path.join(app.config['UPLOAD_FOLDER'], filename))
+            os.remove(temp_path)
+            existing_color_images[color_name] = filename
+
+    color_images_json = json.dumps(existing_color_images)
+
+
+    conn.execute('UPDATE products SET name = ?, description = ?, price = ?, offer_price = ?, image = ?, category = ?, colors = ?, condition = ?, quantity = ?, color_images = ? WHERE id = ?',
+                 (name, description, price, offer_price, image_paths, category, colors, condition, quantity, color_images_json, product_id))
     conn.commit()
     conn.close()
     return jsonify({"message": "Product updated successfully"})
@@ -409,6 +445,56 @@ def delete_product(current_user, vendor, product_id):
     conn.commit()
     conn.close()
     return jsonify({'message': 'Product deleted successfully'})
+
+@app.route('/api/banners', methods=['GET'])
+def get_banners():
+    conn = get_db_connection()
+    banners = conn.execute('SELECT * FROM banners').fetchall()
+    conn.close()
+    return jsonify({'data': [dict(row) for row in banners]})
+
+@app.route('/api/banners', methods=['POST'])
+@admin_required
+def add_banner(current_user):
+    if 'image' not in request.files:
+        return jsonify({'error': 'No image file provided'}), 400
+
+    file = request.files['image']
+    if file.filename == '':
+        return jsonify({'error': 'No selected file'}), 400
+
+    if file:
+        filename = str(uuid.uuid4()) + os.path.splitext(file.filename)[1]
+        temp_path = os.path.join(app.config['UPLOAD_FOLDER'], "temp_" + filename)
+        file.save(temp_path)
+        resize_image(temp_path, os.path.join(app.config['UPLOAD_FOLDER'], filename))
+        os.remove(temp_path)
+        
+        conn = get_db_connection()
+        conn.execute('INSERT INTO banners (image) VALUES (?)', (filename,))
+        conn.commit()
+        conn.close()
+        
+        return jsonify({'message': 'Banner uploaded successfully'}), 201
+
+@app.route('/api/banners/<int:banner_id>', methods=['DELETE'])
+@admin_required
+def delete_banner(current_user, banner_id):
+    conn = get_db_connection()
+    banner = conn.execute('SELECT * FROM banners WHERE id = ?', (banner_id,)).fetchone()
+    if banner:
+        try:
+            os.remove(os.path.join(app.config['UPLOAD_FOLDER'], banner['image']))
+        except OSError as e:
+            print(f"Error deleting file {banner['image']}: {e}")
+        
+        conn.execute('DELETE FROM banners WHERE id = ?', (banner_id,))
+        conn.commit()
+        conn.close()
+        return jsonify({'message': 'Banner deleted successfully'})
+    else:
+        conn.close()
+        return jsonify({'error': 'Banner not found'}), 404
 
 # ... other product endpoints
 
