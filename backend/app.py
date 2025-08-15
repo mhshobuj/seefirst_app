@@ -145,7 +145,6 @@ def init_db():
                 product_code TEXT,
                 quantity INTEGER,
                 vendor_id INTEGER,
-                color_images TEXT,
                 FOREIGN KEY (vendor_id) REFERENCES vendors(id)
             )
         ''')
@@ -173,10 +172,7 @@ def init_db():
             db.execute("ALTER TABLE products ADD COLUMN vendor_id INTEGER REFERENCES vendors(id)");
         except sqlite3.OperationalError as e:
             if "duplicate column name" not in str(e): raise
-        try:
-            db.execute("ALTER TABLE products ADD COLUMN color_images TEXT");
-        except sqlite3.OperationalError as e:
-            if "duplicate column name" not in str(e): raise
+        
 
         # Categories Table
         db.execute("""
@@ -311,44 +307,33 @@ def add_product(current_user, vendor):
     price = float(request.form['price'])
     offer_price = float(request.form.get('offer_price', 0.0))
     category = request.form.get('category')
-    colors = request.form.get('colors')
     condition = request.form.get('condition')
     quantity = int(request.form.get('quantity', 0))
     product_code = request.form.get('product_code', str(uuid.uuid4()))
     vendor_id = vendor['id']
+    images_data_str = request.form.get('images_data', '[]')
+    
+    import json
+    images_data = json.loads(images_data_str)
+    
+    saved_images = []
 
-    image_filenames = []
-    if 'images' in request.files:
-        files = request.files.getlist('images')
-        if len(files) > 5:
-            return jsonify({"error": "Maximum 5 images allowed"}), 400
-        for file in files:
+    for index, data in enumerate(images_data):
+        if f'image_{index}' in request.files:
+            file = request.files[f'image_{index}']
             if file.filename != '':
                 filename = str(uuid.uuid4()) + os.path.splitext(file.filename)[1]
                 temp_path = os.path.join(app.config['UPLOAD_FOLDER'], "temp_" + filename)
                 file.save(temp_path)
                 resize_image(temp_path, os.path.join(app.config['UPLOAD_FOLDER'], filename))
                 os.remove(temp_path)
-                image_filenames.append(filename)
-    image_paths = ','.join(image_filenames)
+                saved_images.append({'filename': filename, 'color': data.get('color')})
 
-    color_images = {}
-    for key, file in request.files.items():
-        if key.startswith('color_images_'):
-            color_name = key.replace('color_images_', '')
-            filename = str(uuid.uuid4()) + os.path.splitext(file.filename)[1]
-            temp_path = os.path.join(app.config['UPLOAD_FOLDER'], "temp_" + filename)
-            file.save(temp_path)
-            resize_image(temp_path, os.path.join(app.config['UPLOAD_FOLDER'], filename))
-            os.remove(temp_path)
-            color_images[color_name] = filename
-    
-    color_images_json = json.dumps(color_images)
-
+    image_paths = json.dumps(saved_images)
 
     conn = get_db_connection()
-    cursor = conn.execute('INSERT INTO products (name, description, price, offer_price, image, category, colors, condition, product_code, quantity, vendor_id, color_images) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', 
-                        (name, description, price, offer_price, image_paths, category, colors, condition, product_code, quantity, vendor_id, color_images_json))
+    cursor = conn.execute('INSERT INTO products (name, description, price, offer_price, image, category, condition, product_code, quantity, vendor_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', 
+                        (name, description, price, offer_price, image_paths, category, condition, product_code, quantity, vendor_id))
     conn.commit()
     product_id = cursor.lastrowid
     conn.close()
@@ -371,60 +356,43 @@ def update_product(current_user, vendor, product_id):
     price = float(request.form['price'])
     offer_price = float(request.form.get('offer_price', 0.0))
     category = request.form.get('category')
-    colors = request.form.get('colors')
     condition = request.form.get('condition')
     quantity = int(request.form.get('quantity', 0))
-    
-    # Handle image updates
-    existing_images = product['image'].split(',') if product['image'] else []
-    deleted_images = request.form.get('deleted_images', '').split(',')
+    images_data_str = request.form.get('images_data', '[]')
+    deleted_images_str = request.form.get('deleted_images', '')
+
+    import json
+    images_data = json.loads(images_data_str)
+    deleted_images = deleted_images_str.split(',') if deleted_images_str else []
+
+    existing_images = json.loads(product['image']) if product['image'] else []
     
     # Remove deleted images
     for filename in deleted_images:
-        if filename in existing_images:
-            existing_images.remove(filename)
-            # Also delete the file from the uploads folder
-            try:
-                os.remove(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-            except OSError as e:
-                print(f"Error deleting file {filename}: {e}")
+        # Also delete the file from the uploads folder
+        try:
+            os.remove(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+        except OSError as e:
+            print(f"Error deleting file {filename}: {e}")
+    
+    updated_images = [img for img in existing_images if img['filename'] not in deleted_images]
 
     # Add new images
-    new_image_filenames = []
-    if 'images' in request.files:
-        files = request.files.getlist('images')
-        if len(files) + len(existing_images) > 5:
-            return jsonify({"error": "Maximum 5 images allowed"}), 400
-        for file in files:
+    for index, data in enumerate(images_data):
+        if f'image_{index}' in request.files:
+            file = request.files[f'image_{index}']
             if file.filename != '':
                 filename = str(uuid.uuid4()) + os.path.splitext(file.filename)[1]
                 temp_path = os.path.join(app.config['UPLOAD_FOLDER'], "temp_" + filename)
                 file.save(temp_path)
                 resize_image(temp_path, os.path.join(app.config['UPLOAD_FOLDER'], filename))
                 os.remove(temp_path)
-                new_image_filenames.append(filename)
+                updated_images.append({'filename': filename, 'color': data.get('color')})
 
-    all_images = existing_images + new_image_filenames
-    image_paths = ','.join(all_images)
+    image_paths = json.dumps(updated_images)
 
-    existing_color_images = json.loads(product['color_images']) if product['color_images'] else {}
-    
-    # Add new color images
-    for key, file in request.files.items():
-        if key.startswith('color_images_'):
-            color_name = key.replace('color_images_', '')
-            filename = str(uuid.uuid4()) + os.path.splitext(file.filename)[1]
-            temp_path = os.path.join(app.config['UPLOAD_FOLDER'], "temp_" + filename)
-            file.save(temp_path)
-            resize_image(temp_path, os.path.join(app.config['UPLOAD_FOLDER'], filename))
-            os.remove(temp_path)
-            existing_color_images[color_name] = filename
-
-    color_images_json = json.dumps(existing_color_images)
-
-
-    conn.execute('UPDATE products SET name = ?, description = ?, price = ?, offer_price = ?, image = ?, category = ?, colors = ?, condition = ?, quantity = ?, color_images = ? WHERE id = ?',
-                 (name, description, price, offer_price, image_paths, category, colors, condition, quantity, color_images_json, product_id))
+    conn.execute('UPDATE products SET name = ?, description = ?, price = ?, offer_price = ?, image = ?, category = ?, condition = ?, quantity = ? WHERE id = ?',
+                 (name, description, price, offer_price, image_paths, category, condition, quantity, product_id))
     conn.commit()
     conn.close()
     return jsonify({"message": "Product updated successfully"})
@@ -440,6 +408,19 @@ def delete_product(current_user, vendor, product_id):
     if not product:
         conn.close()
         return jsonify({'error': 'Product not found or you do not have permission to delete it.'}), 404
+
+    if product['image']:
+        import json
+        try:
+            images = json.loads(product['image'])
+            for image in images:
+                try:
+                    os.remove(os.path.join(app.config['UPLOAD_FOLDER'], image['filename']))
+                except OSError as e:
+                    print(f"Error deleting file {image['filename']}: {e}")
+        except json.JSONDecodeError as e:
+            print(f"Error decoding product.image JSON: {e}")
+
 
     conn.execute('DELETE FROM products WHERE id = ?', (product_id,))
     conn.commit()

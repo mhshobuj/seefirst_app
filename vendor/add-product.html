@@ -45,18 +45,11 @@
                 <div id="existing-images-container" class="image-previews">
                     <!-- Existing images will be shown here -->
                 </div>
-                <div id="image-upload-section">
-                    <h3>Product Images</h3>
-                    <div>
-                        <label for="defaultProductImage">Default Image</label>
-                        <input type="file" id="defaultProductImage" accept="image/*" multiple>
-                        <p>Max 5 photos</p>
-                    </div>
-                    <div id="color-wise-images">
-                        <h4>Color-wise Images</h4>
-                        <div id="color-image-pairs"></div>
-                        <button type="button" id="addColorImage" style="margin-top: 10px;">+ Add Color Image</button>
-                        <p>Max 5 photos</p>
+                <div class="form-group">
+                    <label for="productImages">Product Images</label>
+                    <input type="file" id="productImages" accept="image/*" multiple>
+                    <div id="image-previews" class="image-previews">
+                        <!-- Image previews will be shown here -->
                     </div>
                 </div>
                 <div class="form-group">

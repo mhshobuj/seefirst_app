@@ -119,7 +119,22 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                 for (let j = i; j < i + 5 && j < products.length; j++) {
                     const product = products[j];
-                    const imageUrl = product.image ? `http://localhost:3000/uploads/${product.image.split(',')[0].trim()}` : 'https://placehold.co/400x300';
+                    let imageUrl = 'https://placehold.co/400x300';
+                    if (product.color_images) {
+                        try {
+                            const colorImages = JSON.parse(product.color_images);
+                            const firstColorImage = Object.values(colorImages)[0];
+                            if (firstColorImage) {
+                                imageUrl = `http://localhost:3000/uploads/${firstColorImage}`;
+                            }
+                        } catch (e) {
+                            console.error("Error parsing color_images JSON:", e);
+                        }
+                    }
+                    if (imageUrl === 'https://placehold.co/400x300' && product.image) {
+                        imageUrl = `http://localhost:3000/uploads/${product.image.split(',')[0].trim()}`;
+                    }
+
                     const productCard = `
                         <div class="new-arrival-item">
                             <div class="card shadow-sm h-100 new-arrival-card">
@@ -144,7 +159,22 @@ document.addEventListener('DOMContentLoaded', async () => {
         } else {
             console.log(`Loading products for ${containerSelector}`);
             products.forEach(product => {
-                const imageUrl = product.image ? `http://localhost:3000/uploads/${product.image.split(',')[0].trim()}` : 'https://placehold.co/400x300';
+                let imageUrl = 'https://placehold.co/400x300';
+                if (product.color_images) {
+                    try {
+                        const colorImages = JSON.parse(product.color_images);
+                        const firstColorImage = Object.values(colorImages)[0];
+                        if (firstColorImage) {
+                            imageUrl = `http://localhost:3000/uploads/${firstColorImage}`;
+                        }
+                    } catch (e) {
+                        console.error("Error parsing color_images JSON:", e);
+                    }
+                }
+                if (imageUrl === 'https://placehold.co/400x300' && product.image) {
+                    imageUrl = `http://localhost:3000/uploads/${product.image.split(',')[0].trim()}`;
+                }
+
                 const productCard = `
                     <div class="col-6 col-md-3">
                         <div class="card shadow-sm h-100 ${cardClass}">
