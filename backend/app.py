@@ -279,13 +279,63 @@ def vendor_static(filename):
 # Products
 @app.route('/api/products', methods=['GET'])
 def get_products():
-    # This function needs to be updated to join with vendors table
-    # to show vendor info on products. Leaving for later.
     conn = get_db_connection()
-    # ... (code remains same)
-    products = conn.execute('SELECT * FROM products').fetchall()
+    
+    # Get query parameters
+    category_id = request.args.get('category_id')
+    sort = request.args.get('sort')
+    search = request.args.get('search')
+    condition = request.args.get('condition')
+    page = int(request.args.get('page', 1))
+    limit = 10 # Products per page
+
+    # Base query
+    query = "SELECT * FROM products"
+    params = []
+    
+    # Filtering logic
+    where_clauses = []
+    if category_id:
+        category_name = conn.execute('SELECT name FROM categories WHERE id = ?', (category_id,)).fetchone()
+        if category_name:
+            where_clauses.append("category = ?")
+            params.append(category_name['name'])
+    if search:
+        where_clauses.append("name LIKE ?")
+        params.append(f"%{search}%")
+    if condition:
+        where_clauses.append("condition = ?")
+        params.append(condition)
+
+    if where_clauses:
+        query += " WHERE " + " AND ".join(where_clauses)
+
+    # Sorting logic
+    if sort == 'price_asc':
+        query += " ORDER BY price ASC"
+    elif sort == 'price_desc':
+        query += " ORDER BY price DESC"
+    elif sort == 'newest':
+        query += " ORDER BY id DESC"
+    
+    # Get total count for pagination
+    total_products_query = query.replace("SELECT *", "SELECT COUNT(*)")
+    total_products = conn.execute(total_products_query, params).fetchone()[0]
+    total_pages = (total_products + limit - 1) // limit
+
+    # Pagination logic
+    offset = (page - 1) * limit
+    query += f" LIMIT {limit} OFFSET {offset}"
+
+    products = conn.execute(query, params).fetchall()
     conn.close()
-    return jsonify({"message": "success", "data": [dict(row) for row in products]})
+    
+    return jsonify({
+        "message": "success",
+        "data": [dict(row) for row in products],
+        "total_pages": total_pages,
+        "current_page": page
+    })
 
 @app.route('/api/products/<int:product_id>', methods=['GET'])
 def get_product(product_id):
