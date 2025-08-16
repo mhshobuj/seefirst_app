@@ -304,7 +304,7 @@ def get_products():
         where_clauses.append("name LIKE ?")
         params.append(f"%{search}%")
     if condition:
-        where_clauses.append("condition = ?")
+        where_clauses.append("LOWER(condition) = LOWER(?)")
         params.append(condition)
 
     if where_clauses:

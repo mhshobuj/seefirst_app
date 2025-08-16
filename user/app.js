@@ -453,25 +453,29 @@ document.addEventListener('DOMContentLoaded', async () => {
         document.querySelectorAll('#dropdownFilter + .dropdown-menu .dropdown-item').forEach(item => {
             item.addEventListener('click', function(event) {
                 event.preventDefault();
-                const sortOption = this.dataset.sort;
-                const conditionOption = this.dataset.condition;
-                const currentCategoryId = document.querySelector('#category-filter-container .active').dataset.categoryId;
                 
                 const params = new URLSearchParams(window.location.search);
-                if (sortOption) {
-                    params.set('sort', sortOption);
-                } else {
-                    params.delete('sort');
+                let currentCategoryId = document.querySelector('#category-filter-container .active')?.dataset.categoryId;
+
+                if (this.dataset.sort) {
+                    params.set('sort', this.dataset.sort);
                 }
-                if (conditionOption) {
-                    params.set('condition', conditionOption);
-                } else {
-                    params.delete('condition');
+                if (this.dataset.condition) {
+                    params.set('condition', this.dataset.condition);
                 }
+
                 params.set('page', 1);
                 window.history.pushState({}, '', `${window.location.pathname}?${params.toString()}`);
 
-                loadProducts('#product-listing-container', null, '', currentCategoryId, sortOption, false, null, 1, true, conditionOption);
+                const sortOption = params.get('sort');
+                const conditionOption = params.get('condition');
+                const searchQuery = params.get('search');
+                if (currentCategoryId === 'all') {
+                    currentCategoryId = null;
+                }
+
+
+                loadProducts('#product-listing-container', null, '', currentCategoryId, sortOption, false, searchQuery, 1, true, conditionOption);
             });
         });
     } else if (path.includes('product-detail.html')) {
