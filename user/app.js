@@ -222,6 +222,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     const searchQuery = params.get('search');
 
                     loadProducts('#product-listing-container', null, '', categoryId, sortOption, false, searchQuery, 1, true, conditionOption);
+                    updateClearFiltersButton();
                 });
             });
         
@@ -438,6 +439,20 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
 
+    function updateClearFiltersButton() {
+        const clearFiltersBtn = document.getElementById('clear-filters-btn');
+        if (!clearFiltersBtn) return;
+
+        const params = new URLSearchParams(window.location.search);
+        const hasFilters = params.has('category_id') || params.has('sort') || params.has('condition') || params.has('search');
+
+        if (hasFilters) {
+            clearFiltersBtn.style.display = 'inline';
+        } else {
+            clearFiltersBtn.style.display = 'none';
+        }
+    }
+
     // Conditional loading based on page
     if (path.includes('products.html')) {
         loadCategories();
@@ -448,6 +463,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         const searchQuery = urlParams.get('search');
         const page = parseInt(urlParams.get('page')) || 1;
         loadProducts('#product-listing-container', null, '', categoryId, sortOption, false, searchQuery, page, true, conditionOption); // Show shimmer on products page
+        updateClearFiltersButton();
 
         // Add event listeners to filter dropdown items
         document.querySelectorAll('#dropdownFilter + .dropdown-menu .dropdown-item').forEach(item => {
@@ -476,8 +492,17 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 
                 loadProducts('#product-listing-container', null, '', currentCategoryId, sortOption, false, searchQuery, 1, true, conditionOption);
+                updateClearFiltersButton();
             });
         });
+
+        const clearFiltersBtn = document.getElementById('clear-filters-btn');
+        if (clearFiltersBtn) {
+            clearFiltersBtn.addEventListener('click', function(event) {
+                event.preventDefault();
+                window.location.href = window.location.pathname;
+            });
+        }
     } else if (path.includes('product-detail.html')) {
         const urlParams = new URLSearchParams(window.location.search);
         const productId = urlParams.get('id');
